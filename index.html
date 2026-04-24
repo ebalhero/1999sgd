@@ -4,14 +4,145 @@
   <title>Home</title>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="robots" content="index,follow"/>
+  <meta name="generator" content="GrapesJS Studio"/>
+
+  <!-- 🚀 PRELOAD first image (critical) -->
   <link rel="preload" as="image" href="https://iili.io/B6BEyIS.webp">
+
   <link rel="stylesheet" href="./style.css">
 </head>
-<body>
-<section class="gjs-section"><div class="phone-frame"><div class="gjs-container image-stack">
-<img src="https://iili.io/B6BEyIS.webp" decoding="async"/>
-<img src="https://iili.io/B6BGdBe.webp" loading="lazy" decoding="async"/>
-<img src="https://iili.io/B6BEmp2.webp" loading="lazy" decoding="async"/>
-<img src="https://iili.io/B6BEQrG.webp" loading="lazy" decoding="async"/>
-</div></div></section>
-</body></html>
+
+<body id="io8r">
+
+<!-- SECTION 1 -->
+<section class="gjs-section">
+  <div class="phone-frame">
+    <div class="gjs-container image-stack">
+
+      <!-- FIRST IMAGE (no lazy) -->
+      <img src="https://iili.io/B6BEyIS.webp" decoding="async"/>
+
+      <!-- LAZY LOAD ALL BELOW -->
+      <img src="https://iili.io/B6BGdBe.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BEmp2.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BEQrG.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGK2j.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGBpV.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGqkQ.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGxQ1.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGcTN.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BG0Qt.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGGGn.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGM4s.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGhv4.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGvn9.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BG6yQ.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGLZP.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGZn1.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BGmFa.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BMH9R.webp" loading="lazy" decoding="async"/>
+
+    </div>
+  </div>
+</section>
+
+<!-- COUNTDOWN -->
+<section class="gjs-section">
+  <div class="phone-frame">
+    <div class="gjs-container image-stack" id="iedmk">
+
+      <div class="countdown" id="i6mjy">
+        <span data-js="countdown" class="countdown-cont">
+
+          <div class="countdown-block">
+            <div data-js="countdown-day" class="countdown-digit"></div>
+            <div class="countdown-label">days</div>
+          </div>
+
+          <div class="countdown-block">
+            <div data-js="countdown-hour" class="countdown-digit"></div>
+            <div class="countdown-label">hours</div>
+          </div>
+
+          <div class="countdown-block">
+            <div data-js="countdown-minute" class="countdown-digit"></div>
+            <div class="countdown-label">minutes</div>
+          </div>
+
+          <div class="countdown-block">
+            <div data-js="countdown-second" class="countdown-digit"></div>
+            <div class="countdown-label">seconds</div>
+          </div>
+
+        </span>
+
+        <span data-js="countdown-endtext" class="countdown-endtext"></span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3 -->
+<section class="gjs-section">
+  <div class="phone-frame">
+    <div class="gjs-container image-stack">
+
+      <img src="https://iili.io/B6BGy8v.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BMdwN.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BMKMX.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BMBFs.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/BvmRW42.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BMnSf.webp" loading="lazy" decoding="async"/>
+      <img src="https://iili.io/B6BMCcG.webp" loading="lazy" decoding="async"/>
+
+    </div>
+  </div>
+</section>
+
+<script>
+var props = {"i6mjy":{"startfrom":"2026-04-30","endText":"promosi tamat"}};
+
+var now = Date.now;
+
+var el = document.getElementById("i6mjy");
+var config = props["i6mjy"];
+
+var start = new Date(config.startfrom).getTime();
+var container = el.querySelector('[data-js=countdown]');
+var endText = el.querySelector('[data-js=countdown-endtext]');
+
+var d = el.querySelector('[data-js=countdown-day]');
+var h = el.querySelector('[data-js=countdown-hour]');
+var m = el.querySelector('[data-js=countdown-minute]');
+var s = el.querySelector('[data-js=countdown-second]');
+
+function update() {
+  var t = start - now();
+
+  if (t < 0) {
+    container.style.display = 'none';
+    endText.style.display = '';
+    endText.innerHTML = config.endText;
+    clearInterval(interval);
+    return;
+  }
+
+  var days = Math.floor(t / 86400000);
+  var hours = Math.floor((t % 86400000) / 3600000);
+  var mins = Math.floor((t % 3600000) / 60000);
+  var secs = Math.floor((t % 60000) / 1000);
+
+  d.innerHTML = days.toString().padStart(2,'0');
+  h.innerHTML = hours.toString().padStart(2,'0');
+  m.innerHTML = mins.toString().padStart(2,'0');
+  s.innerHTML = secs.toString().padStart(2,'0');
+}
+
+var interval = setInterval(update, 1000);
+update();
+</script>
+
+</body>
+</html>
