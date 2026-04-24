@@ -5,25 +5,22 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="robots" content="index,follow"/>
-  <meta name="generator" content="GrapesJS Studio"/>
 
-  <!-- 🚀 PRELOAD first image (critical) -->
+  <!-- 🚀 preload first image -->
   <link rel="preload" as="image" href="https://iili.io/B6BEyIS.webp">
 
   <link rel="stylesheet" href="./style.css">
 </head>
 
-<body id="io8r">
+<body>
 
 <!-- SECTION 1 -->
 <section class="gjs-section">
   <div class="phone-frame">
     <div class="gjs-container image-stack">
 
-      <!-- FIRST IMAGE (no lazy) -->
       <img src="https://iili.io/B6BEyIS.webp" decoding="async"/>
 
-      <!-- LAZY LOAD ALL BELOW -->
       <img src="https://iili.io/B6BGdBe.webp" loading="lazy" decoding="async"/>
       <img src="https://iili.io/B6BEmp2.webp" loading="lazy" decoding="async"/>
       <img src="https://iili.io/B6BEQrG.webp" loading="lazy" decoding="async"/>
@@ -102,21 +99,15 @@
 </section>
 
 <script>
-var props = {"i6mjy":{"startfrom":"2026-04-30","endText":"promosi tamat"}};
-
 var now = Date.now;
+var start = new Date("2026-04-30").getTime();
 
-var el = document.getElementById("i6mjy");
-var config = props["i6mjy"];
-
-var start = new Date(config.startfrom).getTime();
-var container = el.querySelector('[data-js=countdown]');
-var endText = el.querySelector('[data-js=countdown-endtext]');
-
-var d = el.querySelector('[data-js=countdown-day]');
-var h = el.querySelector('[data-js=countdown-hour]');
-var m = el.querySelector('[data-js=countdown-minute]');
-var s = el.querySelector('[data-js=countdown-second]');
+var d = document.querySelector('[data-js=countdown-day]');
+var h = document.querySelector('[data-js=countdown-hour]');
+var m = document.querySelector('[data-js=countdown-minute]');
+var s = document.querySelector('[data-js=countdown-second]');
+var container = document.querySelector('[data-js=countdown]');
+var endText = document.querySelector('[data-js=countdown-endtext]');
 
 function update() {
   var t = start - now();
@@ -124,7 +115,7 @@ function update() {
   if (t < 0) {
     container.style.display = 'none';
     endText.style.display = '';
-    endText.innerHTML = config.endText;
+    endText.innerHTML = "promosi tamat";
     clearInterval(interval);
     return;
   }
