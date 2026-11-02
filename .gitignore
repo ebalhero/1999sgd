@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.DS_Store
+d11-pip/
+d12-pip/
+public/slides/
+public/images/*
+!public/images/sg/
+src/components/
+src/lib/
