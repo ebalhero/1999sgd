@@ -1,274 +1,231 @@
 /**
  * ==============================================================================
- * KONFIGURASI LAMAN WEB WEDDING SINGAPORE — PRIORITY PREMIUM (lxFILMS)
- * Semua wording / teks utama boleh diubah terus di dalam fail ini.
+ * KONFIGURASI LAMAN WEB WEDDING — lxFILMS PRO (PAKEJ RM 3499)
+ * Semua teks kandungan (body text), harga, butiran pakej, testimoni & FAQ
+ * boleh diubah terus di dalam fail ini.
  * ==============================================================================
  */
 
 export const siteConfig = {
   whatsapp: {
     phoneNumber: "601120732058",
-    defaultMessage: "hi saya berminat pakej SGD2499!",
+    defaultMessage: "Hai lxFILMS! Saya berminat dengan Pakej Promo Wedding RM3499!",
     buttonLabel: "Nak Book Segera!",
   },
 
+  // Pop-Out Screen Urgency (Minimalist — Kurang dari 5 slot)
   urgencyPopup: {
     enabled: true,
-    badge: "LIMITED PROMO",
-    highlight: "3 slot remaining",
-    message: "for this promo! book now with us!",
+    headlineItalic: "Slot Sekarang",
+    headlineRegular: "Kurang Dari 5!",
+    bodyText:
+      "Kami hanya ambil beberapa wedding setiap bulan supaya setiap karya dijaga 100% berkualiti. Lock tarikh majlis korang sekarang dengan deposit RM 300 sebelum kembali ke harga asal.",
+    buttonText: "Book Now - Secure Your Slot!",
+    dismissText: "Teruskan Lihat Pakej",
   },
 
+  // Slide 1: Hero Section
   hero: {
-    priceHighlight: "2499 SGD",
-    para1: "kami merakam setiap detik,\ndengan jiwa dan rasa.",
-    para2Prefix: "now it’s only ",
-    para3:
-      "setiap pelukan lembut,\nsetiap mata yang berkaca,\nsetiap senyuman kecil",
-    para4: "dirakam cantik dan kekal\nselamanya",
-    bannerTitlePrefix: "It is for ",
-    bannerTitleItalic: "Premium\n& Tailored",
+    titleLine1Italic: "Hari Besar,",
+    titleLine2Regular: "Kenangan",
+    titleLine3Italic: "Selamanya",
+    priceLabel: "now it’s only",
+    priceValue: "RM 3499",
+    para1: "Bila hari tu tiba... kita tak nak terlepas satu\npun detik penting.",
+    para2:
+      "Kita nak setiap pelukan, setiap senyuman,\nsetiap air mata bahagia — dirakam cantik\ndan kekal selamanya",
   },
 
-  classicVibes: {
-    titleLine1: "Premium Films",
-    titleLine2: "Classic Vibes",
-    description:
-      "A touch of soft shadow with\nPhoto & video sekali, menyulam kisah\ncinta jadi kenangan yang tak pernah\npudar.",
+  // Slide 2: Nikah & Sanding 9 Jam Full Coverage
+  coverageIntro: {
+    titleLine1Prefix: "Nikah & ",
+    titleLine1Italic: "Sanding",
+    titleLine2Prefix: "— ",
+    titleLine2Italic: "9 jam",
+    titleLine2Suffix: " full coverage",
+    para1:
+      "Dari lafaz yang menyatukan hingga\nlangkah terakhir di pelamin, semuanya\ndirakam tanpa terhenti.",
+    para2:
+      "Photo & video sekali, menyulam kisah\ncinta jadi kenangan yang tak pernah\npudar.",
   },
 
-  trustedCouples: {
-    titlePrefix: "Trusted by ",
-    titleItalic: "100+ Couples",
-    description:
-      "Not because we promise big things,\nbut because we show up —\ncalm, prepared, and fully present.",
-  },
-
-  visualMemory: {
-    line1Prefix: "Visual diberi ",
-    line1Italic: "rasa",
-    line2Prefix: "dan ",
-    line2Italic: "kekal",
-    line2Suffix: " sebagai",
-    line3Italic: "memori",
-  },
-
-  royalFamilies: {
-    line1Italic: "Experienced",
-    line2Italic: "In",
-    line2Regular: " Royal",
-    line3Regular: "Families",
-    line4Italic: "Moments",
-  },
-
-  ourApproach: {
-    titleItalic: "Our",
-    titleRegular: " Approach",
-    subtitle1: "Minimal direction, Natural flow.\nHonest moments.",
-    subtitle2:
-      "Kami biarkan hari itu berlaku,\nsementara kami simpan apa yang penting",
-  },
-
-  gardenToHall: {
-    line1Italic: "From Garden Concepts",
-    line2Prefix: "To Big ",
-    line2Italic: "Elegant",
-    line2Suffix: " Hall...",
-  },
-
-  whyChooseUs: {
-    titlePrefix: "Why ",
-    titleItalic: "Choose Us",
-    titleSuffix: " Instead of\nOthers?",
-    points: [
-      "Every moment is carefully captured, curated, and preserved, nothing rushed, nothing forced.",
-      "We meet, we plan, and we move with complete transparency.",
-      "Jika sesuatu itu tidak selari dengan your dreams & moodboard, kami akan jujur dari awal.",
-      "Setiap client bagi kami adalah sebuah amanah. A responsibility we carry with pride.",
-      "Starting 2026 onwards, we personally handle every wedding, no 3rd shooters.",
-    ],
-    guaranteeIntro: "dont worry and be nervous, ",
-    guaranteeBold: "we got\nmoney back guarantee policy!",
-    guaranteePromise:
-      "we promise to deliver on\ntime*, if late, We will refund\n10% back to you!",
-    guaranteeFootnote:
-      "*jika tidak melibatkan kemalangan, kematian, penyakit yang teruk",
-  },
-
-  simplePricing: {
-    line1Prefix: "Simple ",
-    line1Italic: "pricing.",
-    line1Suffix: " Thoughtful",
-    line2Prefix: "wedding ",
-    line2Italic: "coverage.",
-    gridRows: [
+  // Slide 3: Apa Yang Korang Akan Dapat (8 Glassmorphic Cards)
+  deliverables: {
+    titleLine1Prefix: "Apa yang ",
+    titleLine1Italic: "korang",
+    titleLine2Prefix: "akan ",
+    titleLine2Italic: "dapat",
+    cards: [
       [
-        "Full coverage\n9 jam untuk\nNikah & Sanding",
-        "1 photographer\ndan\n1 videographer",
+        { text: "Full coverage\n", bold: false },
+        { text: "9 jam", bold: true },
+        { text: " untuk\n", bold: false },
+        { text: "Nikah &\nSanding", bold: true },
       ],
       [
-        "3 Video Edited &\n300-500 Min Photo\nEdited",
-        "Highlight Teaser\nsiap dalam 7 hari\nbekerja",
+        { text: "1 photographer\n", bold: true },
+        { text: "dan\n", bold: false },
+        { text: "1 videographer", bold: true },
       ],
       [
-        "Full deliverable\nphoto, video & album\nin 90 hari bekerja",
-        "Tone yang films,\ntimeless &\ncinematic",
+        { text: "3 Video\nEdited", bold: true },
+        { text: " & 300\nMin Photo\nEdited", bold: false },
       ],
       [
-        "Signature\nLeather album +\nClassic frame",
-        "Jaminan Pulangan\nDuit Jika Lambat\nDeliver!*",
+        { text: "Teaser", bold: true },
+        { text: " siap\ndalam\n", bold: false },
+        { text: "7 hari\nbekerja", bold: true },
+      ],
+      [
+        { text: "Full deliverable\n", bold: false },
+        { text: "siap dalam\n21 hari\nbekerja", bold: true },
+      ],
+      [
+        { text: "Tone yang\n", bold: false },
+        { text: "films,\ntimeless &\ncinematic", bold: true },
+      ],
+      [
+        { text: "Sentuhan tone\nyang\n", bold: false },
+        { text: "elegan &\npremium", bold: true },
+      ],
+      [
+        { text: "Jaminan\nPulangan\nDuit", bold: true },
+        { text: " Jika Late\nDeliver!*", bold: false },
       ],
     ],
     footnoteLine1: "*untuk produk deliver secara digital sahaja",
-    footnoteLine2Prefix: "Digital : ",
+    footnoteLine2Prefix: "3 Video : ",
     footnoteLine2Bold: "Teaser, Nikah Highlight & Sanding Highlight",
   },
 
-  freeGiftsWorth: {
-    line1Italic: "beyond",
-    line1Suffix: " standard coverage,",
-    line2Prefix: "& semua ini ",
-    line2Italic: "FREEGIFT",
+  // Slide 4: 5 Free Gifts Percuma
+  freeGifts: {
+    titleLine1Prefix: "Dan ",
+    titleLine1Italic: "semua ni",
+    titleLine1Suffix: " kami bagi",
+    titleLine2Italic: "PERCUMA:",
     items: [
-      { title: "DELIVERY\nOF ALBUM\n& FRAME", worth: "Worth 200SGD" },
       {
-        title: "4 BULAN LINK\nWARRANTY + 2X\nAMENDMENT",
-        worth: "Worth 900SGD",
+        title: "Album & Frame\n(free delivery)",
+        worth: "Worth RM 1000",
       },
-      { title: "TRANSPORT\nATION FEE", worth: "Worth 300SGD" },
       {
-        title: "DRONE SHOTS\n(UNTUK INTRO/\nOUTRO)",
-        worth: "Worth 500SGD",
+        title: "4 bulan link warranty\n+ 2x amendment",
+        worth: "Worth RM 900",
       },
-      { title: "NIKAH\nPREPARATION\nSESSION", worth: "Worth 900SGD" },
+      {
+        title: "Transportation\nFee",
+        worth: "Worth RM 300",
+      },
+      {
+        title: "Drone Shots\n(untuk intro/outro)",
+        worth: "Worth RM 500",
+      },
+      {
+        title: "Nikah & Sanding\npreparation session",
+        worth: "Worth RM 1000",
+      },
     ],
-    albumHeadingLine1Italic: "Premium",
-    albumHeadingLine1Suffix: " Album",
-    albumHeadingLine2Prefix: "& Frame ",
-    albumHeadingLine2Italic: "Quality",
+    albumTitleLine1Italic: "Premium",
+    albumTitleLine1Suffix: " Album",
+    albumTitleLine2Prefix: "& Frame ",
+    albumTitleLine2Italic: "Quality",
   },
 
+  // Slides 5 & 6: Album & Frame Showcase
   albumShowcase: {
-    badge1Line1: "CUSTOM ",
-    badge1Italic: "PREMIUM\nENGRAVED",
-    badge1Suffix: " ALBUM",
-    badge2Line1: "+ PREMIUM\n",
-    badge2Italic: "CLASSIC",
-    badge2Suffix: " FRAME",
-    finishingText: "MATTE PAPER +\nGLOSSY PAPER\nFINISHING",
-    sizeText: "12*8 INCH +\n20 PAGES",
+    topLabel: "custom premium\nleather engraved",
+    bottomLabel: "+ premium classic frame",
+    leftLabel: "12*8 inch + 20 Pages",
+    rightLabel: "matte paper + glossy\npaper finishing",
   },
 
-  promoValueSection: {
-    normalValue: "3999 SGD,",
-    promoPrice: "2499 SGD.",
-    para2:
+  // Slide 7: Drone Shots & Promo Value
+  promoValue: {
+    arrowLabel: "drone shots",
+    headlineMuted1: "Total value pakej ",
+    headlineBold1: "ni lebih\nRM4999, ",
+    headlineMuted2: "tapi sekarang\n",
+    headlineBold2: "hanya ",
+    priceBadge: "RM3499.",
+    para1:
       "Slot sangat terhad — kami hanya ambil\nbeberapa wedding setiap bulan supaya\nsetiap kerja dijaga 100%.",
-    para3Prefix: "Promo ni cuma berjalan dalam ",
-    para3Bold: "tempoh\nterhad sahaja, dan bila tempoh tu habis",
-    para4Bold: "— harga akan kembali ke asal",
-    para4Suffix: " dan semua\nfree gift ni tak lagi termasuk.",
+    para2Prefix: "Promo ni cuma berjalan dalam ",
+    para2Bold: "tempoh\nterhad sahaja, dan bila tempoh tu habis",
+    para3Prefix: "— ",
+    para3Bold: "harga akan kembali ke asal",
+    para3Suffix: " dan semua\nfree gift ni tak lagi termasuk.",
   },
 
-  discountBanner: {
-    ribbonText: "1500SGD OFF",
-    oldPrice: "3999 SGD",
-    newPrice: "2499 SGD",
+  // Slide 9: RM 1500 OFF & Body Text
+  discountOffer: {
     para1Prefix: "Bila ",
     para1Bold: "promo tamat,",
     para1Suffix: " harga akan\nkembali ke asal.",
-    para2:
-      "Kalau sekarang masih ada ruang\n— ini masa terbaik untuk grab.",
+    para2: "Kalau sekarang masih ada ruang\n— ini masa terbaik untuk grab.",
     para3:
       "Sebab hari bahagia cuma sekali...\ntapi kenangan dia akan hidup\nselamanya. ✨",
   },
 
-  singaporeMastery: {
-    heading: {
-      italic1: "Mastered",
-      text1: " Through Years of\nShooting in ",
-      italic2: "Singapore",
-      text2: " —\n",
-      italic3: "Results",
-      text3: " That Couples\nTruly Adore.",
-    },
-    venuesTitleItalic: "Where Our Stories",
-    venuesTitleSuffix: " Have\nUnfolded",
-    venues: [
-      { name: "Masjid Yusof Ishak", img: "./images/sg/venue_01.webp" },
-      { name: "HomeTeam NS Villa", img: "./images/sg/venue_02.webp" },
-      { name: "Tiara Waterfront", img: "./images/sg/venue_03.webp" },
-      { name: "Masjid al-Islah", img: "./images/sg/venue_04.webp" },
-      { name: "SG Botanic Garden", img: "./images/sg/venue_05.webp" },
-      { name: "Gillman Barracks", img: "./images/sg/venue_06.webp" },
-      { name: "Fort Canning Park", img: "./images/sg/venue_07.webp" },
-      { name: "Istana, Kinex Mall", img: "./images/sg/venue_08.webp" },
-      { name: "National Gallery SG", img: "./images/sg/venue_09.webp" },
-    ],
-    magicTitlePrefix: "Where ",
-    magicTitleItalic: "magic breathes",
-    magicTitleSuffix: " a\nmasterpiece",
-  },
-
-  package: {
-    sectionTitleItalic: "Package",
-    sectionTitleSuffix: " Details",
-    topBanner: "Exclusive for 2026/2027 Booking!",
-    nameItalic: "Priority",
-    nameRegular: " Premium\nPhoto & Video",
+  // Slide 10: Main Package Card (Standard Promo RM 3499)
+  mainPackage: {
+    topBanner: "Exclusive only for 2026 Booking!",
+    titleItalic: "Standard Promo",
+    titleRegular: "Photo & Video",
     subtitle: "Nikah Session + Sanding + Outdoor",
-    offerPrice: "2499 SGD",
-    cardPrice: "SGD 2499",
+    offerPrice: "RM 3499",
     normalPriceLabel: "NP : ",
-    normalPriceValue: "SGD 3999",
+    normalPriceValue: "RM 4499",
     photographyItems: [
-      { text: "10 Hours Of Coverage", bold: false },
-      { text: "Nikah : 3 Hours Coverage + Preparation Time", bold: false },
-      { text: "Sanding : 6 Hours Coverage + Outdoor Session", bold: false },
-      { text: "1 Senior Photographer", bold: true },
-      { text: "Films Classic Tone ( Indoor & Outdoor )", bold: false },
+      { boldPrefix: "9 Hours", text: " Of Coverage" },
+      { boldPrefix: "1 Senior Photographer", text: "" },
+      { boldPrefix: "", text: "Films Classic Tone ( Indoor & Outdoor )" },
       {
+        boldPrefix: "",
         text: "Clean Bright Tone ( Group Photos & Pelamin Potraiture )",
-        bold: false,
       },
-      { text: "Min 300 Edited Per Events ( Nikah/Sanding )", bold: true },
-      { text: "1x Signature Leather Cover Album", bold: true },
-      { text: "1x Signature Classic Frame", bold: true },
+      {
+        boldPrefix: "Min 300 Edited Per Events ( Nikah/Sanding )",
+        text: "",
+      },
+      { boldPrefix: "1x Signature Album with Leather Cover", text: "" },
+      { boldPrefix: "1x Classic Canvas Frame", text: "" },
     ],
     videographyItems: [
-      { text: "10 Hours Of Coverage", bold: false },
-      { text: "Nikah : 3 Hours Coverage + Preparation Time", bold: false },
-      { text: "Sanding : 6 Hours Coverage + Outdoor Session", bold: false },
-      { text: "1 Senior Videographer", bold: true },
-      { text: "Clean & Classic Vibes Tone", bold: false },
+      { boldPrefix: "9 Hours", text: " Of Coverage" },
+      { boldPrefix: "1 Senior Videographer", text: "" },
+      { boldPrefix: "", text: "Clean & Classic Vibes Tone" },
       {
-        text: "Free Drone Shots For Establisment Intro/Outro*",
-        bold: false,
+        boldPrefix: "Free Drone Shots",
+        text: " For Establisment Intro/Outro",
       },
-      { text: "4 Month Link Warranty With Zero Cost", bold: false },
-      { text: "1 Nikah Highlight", bold: true },
-      { text: "1 Sanding Highlight", bold: true },
-      { text: "1 Teaser", bold: true },
+      { boldPrefix: "", text: "4-Month Link Warranty With Zero Cost" },
+      { boldPrefix: "1 Sanding Highlight", text: "" },
+      { boldPrefix: "1 Nikah Highlight", text: "" },
+      { boldPrefix: "1 Teaser", text: "" },
     ],
     freeGiftItems: [
-      { boldPrefix: "Free ", text: "Transportation Fee ( 200 SGD )" },
+      { boldPrefix: "Free", text: " Transportation Fee (Worth RM 200)" },
+      { boldPrefix: "Free", text: " Nikah Preparation session (Worth RM 500)" },
       {
-        boldPrefix: "Free ",
-        text: "Coverage 2 Hari Tanpa Additional Cost ( 500 SGD )",
+        boldPrefix: "Free",
+        text: " Nikah Outdoor/Portraiture Session (Worth RM 450)",
       },
-      { boldPrefix: "Free ", text: "Nikah Preparation Session ( 300 SGD )" },
+      { boldPrefix: "Free", text: " Album and Frame Postage (Worth RM 400)" },
       {
-        boldPrefix: "Free ",
-        text: "Nikah Short Outdoor Session ( 300 SGD )",
+        boldPrefix: "Free",
+        text: " Raw Footages upon request (Worth RM 1,000)",
       },
-      { boldPrefix: "Free ", text: "Raw videos Upon Request ( 500 SGD )" },
     ],
   },
 
+  // Slide 11: Countdown Subtext & Deposit Serendah RM 300
   depositSection: {
-    heading: "Deposit Serendah\nSGD 300",
+    countdownNote:
+      "Tawaran terhad 7 hari — harga kembali ke RM 4999 selepas tamat",
+    heading: "Deposit Serendah\nRM 300",
     para1: "Untuk tempahan, korang tak perlu bayar\npenuh.",
-    para2: "Deposit hanya SGD 300 sahaja untuk lock\nslot.",
+    para2: "Deposit hanya RM300 sahaja untuk lock\nslot.",
     balanceLabel: "Baki bayaran:",
     term1Bold1: "80%",
     term1Mid: " dibayar ",
@@ -281,75 +238,298 @@ export const siteConfig = {
     buttonText: "Nak Book Segera!",
   },
 
+  // Slide 12: FREE E-Kad RSVP
   rsvpPromo: {
     topText: "Khas Untuk Promo\nKali Ini Sahaja!",
-    subtitleBold: "E-Kad RSVP",
-    subtitleRegular: "Bernilai 99 SGD!",
+    pillBold: "E-Kad RSVP",
+    pillRegular: "Bernilai RM 99!",
   },
 
+  // Slides 13 & 14: Feedback & Testimoni
   testimonials: {
     title1: "Feedback & Testimoni",
     subtitle1: "& banyak lagi di instagram !",
-    title2Italic1: "No Worries",
-    title2Mid: " Ramai\nLagi We ",
-    title2Italic2: "Deliver",
-    title2End: " Tau!",
+    title2Line1Prefix: "No ",
+    title2Line1Italic: "Worries",
+    title2Line1Suffix: " Ramai",
+    title2Line2Prefix: "Lagi We ",
+    title2Line2Italic: "Deliver",
+    title2Line2Suffix: " Tau!",
   },
 
-  processTimeline: {
-    titleLine1Prefix: "How we ",
-    titleLine1Italic: "process",
-    titleLine2Prefix: "your ",
-    titleLine2Italic: "photos & video?",
-    steps: [
-      { label: "Event Day", top: "7.0%", left: "60.5%" },
-      { label: "Backup Period", top: "12.9%", left: "26.6%" },
-      { label: "Editing Phase", top: "27.0%", left: "13.5%" },
-      { label: "Selection Period", top: "33.6%", left: "58.1%" },
-      { label: "Teaser Up", top: "44.2%", left: "35.2%" },
-      { label: "Highly Detailed Editing", top: "55.1%", left: "48.1%" },
-      { label: "Highlights Up", top: "66.1%", left: "4.5%" },
-      { label: "All Products Delivered", top: "78.1%", left: "32.3%" },
+  // Slides 15, 16, 17: Frequent Ask Question (All 7 Connected)
+  faqSection: {
+    headerLine1: "Frequent",
+    headerLine2Prefix: "Ask ",
+    headerLine2Italic: "Question",
+    items: [
+      {
+        question: "Berapa nak add-on photographer /\nvideographer?",
+        answer:
+          "1 event: RM600\n2 event: RM900\n1 jam tambahan: RM150 (photo/video)\nFast Editing; RM500 (Min. 3 Hours Gap)",
+      },
+      {
+        question: "Boleh refund tak deposit?",
+        answer: "Deposit tidak refundable kecuali dalam\nsituasi berikut:",
+        bullets: [
+          "Putus, sponsored by kawan/family, tak jadi kahwin → Tiada refund melainkan dibatalkan dalam masa 3 minggu selepas booking",
+          "Sakit, kecederaan, kemalangan → 50% refund jika event tinggal 1 bulan atau 3 minggu. 100% refund jika event masih 7 bulan ke atas",
+          "Pasangan berlaku kematian → 100% refund",
+        ],
+      },
+      {
+        question: "Pakej ni cover dua hari ke?",
+        answer:
+          "Tak cover dua hari.\nTapi korang boleh add-on RM500 untuk\ncoverage dua hari.",
+      },
+      {
+        question: "Ada cas tersembunyi tak?",
+        answer:
+          "Tiada hidden charge. Apa yang korang\ntengok ialah apa yang korang bayar.",
+      },
+      {
+        question: "Ada Cover Preparation ke?",
+        answer:
+          "Yup, ada untuk nikah seawal 7:30 AM\n\nif nak request 5:00 AM - 6:00 AM, boleh\ntapi accomodation perlu disediakan\nberdekatan tempat bersiap\n\nNikah - Kita Fokus Bridal Part, Details\nSanding - Flatlay & Groom Part",
+      },
+      {
+        question: "Ada office ke?",
+        answer:
+          "Kami home-based office di Kajang,\nSelangor.\nBoleh set meeting secara online atau\noffline ikut keselesaan korang.",
+      },
+      {
+        question: "Ada Money Back Guarantee Ke?",
+        answer:
+          "Yup! Jika lewat delivery online product,\nkita akan refund 20% dari pembayaran!",
+      },
     ],
   },
 
-  faqs: [
-    {
-      question: "Berapa nak add-on photographer /\nvideographer?",
-      answer:
-        "1 event: 400 SGD\n2 event: 400 SGD\n1 jam tambahan: 100 SGD (photo/video)\nFast Editing: 100 SGD (Min. 3 Hours Gap)",
-    },
-    {
-      question: "Boleh refund tak deposit?",
-      answer: "Deposit tidak refundable kecuali dalam\nsituasi berikut:",
-      bullets: [
-        "Putus, sponsored by kawan/family, tak jadi kahwin → Tiada refund melainkan dibatalkan dalam masa 3 minggu selepas booking",
-        "Sakit, kecederaan, kemalangan → 50% refund jika event tinggal 1 bulan atau 3 minggu. 100% refund jika event masih 7 bulan ke atas",
-        "Pasangan berlaku kematian → 100% refund",
-        "Hot Date ( High Demand Date ) - No Refund",
-      ],
-    },
-    {
-      question: "Pakej ni cover dua hari ke?",
-      answer:
-        "Tak cover dua hari.\nTapi korang boleh add-on 400 SGD\nuntuk coverage dua hari.",
-    },
-    {
-      question: "Ada cas tersembunyi tak?",
-      answer:
-        "Tiada hidden charge. Apa yang korang\ntengok ialah apa yang korang bayar.",
-    },
-    {
-      question: "Ada office ke?",
-      answer:
-        "Kami masih home-based office\nBoleh set meeting secara online atau\noffline ikut keselesaan korang.",
-    },
-    {
-      question: "Ada Money Back Guarantee Ke?",
-      answer:
-        "Yup! Jika lewat delivery online product,\nkita akan refund 10% dari pembayaran!",
-    },
-  ],
+  // Slides 18, 19, 20: Promosi Pakej Solo & One-Event
+  soloPackagesSection: {
+    pillTitleLine1: "Promosi",
+    pillTitleLine2: "Pakej Solo!",
+    packages: [
+      // Slide 18: Standard Photo or Video RM 2499
+      {
+        id: "solo-1999",
+        bannerBg: "#68bf45",
+        bannerTextColor: "#1a1a1a",
+        topBanner: "Exclusive only for 2026 Booking!",
+        titleItalic: "Standard ",
+        titleRegular1: "Photo",
+        titleBoldConnector: "",
+        titleLine2: "Or Video",
+        subtitle: "Nikah Session + Sanding + Outdoor",
+        price: "RM 2499",
+        normalPriceLabel: "NP : ",
+        normalPriceValue: "RM 4999",
+        showOrDivider: true,
+        photographyItems: [
+          { boldPrefix: "9 Hours", text: " Of Coverage" },
+          {
+            boldPrefix: "1 Senior Photographer + 1 Assist Photographer",
+            text: "",
+          },
+          { boldPrefix: "", text: "Films Classic Tone (Indoor & Outdoor)" },
+          {
+            boldPrefix: "",
+            text: "Clean Bright Tone (Group Photos & Pelamin Potraiture)",
+          },
+          {
+            boldPrefix: "Min 300 Edited Per Events (Nikah/Sanding)",
+            text: "",
+          },
+        ],
+        videographyItems: [
+          { boldPrefix: "9 Hours", text: " Of Coverage" },
+          { boldPrefix: "", text: "Coverage for either Nikah or Sanding" },
+          {
+            boldPrefix: "1 Senior Videographer + 1 Assist Videographer",
+            text: "",
+          },
+          { boldPrefix: "", text: "Clean & Classic Vibes Tone" },
+          {
+            boldPrefix: "",
+            text: "Free Drone Shots For Establisment Intro/Outro",
+          },
+          { boldPrefix: "", text: "4 Month Link Warranty With Zero Cost" },
+          { boldPrefix: "1 Nikah Highlight (HD)", text: "" },
+          { boldPrefix: "1 Sanding Highlight (HD)", text: "" },
+          { boldPrefix: "1 Teaser (HD)", text: "" },
+        ],
+        freeGiftItems: [
+          { boldPrefix: "Free", text: " Transportation Fee (Worth RM 200)" },
+          {
+            boldPrefix: "Free",
+            text: " Nikah Preparation session (Worth RM 500)",
+          },
+          {
+            boldPrefix: "Free",
+            text: " Nikah Outdoor/Portraiture Session (Worth RM 450)",
+          },
+          {
+            boldPrefix: "Free",
+            text: " Album and Frame Postage (Worth RM 400)",
+          },
+          {
+            boldPrefix: "Free",
+            text: " Raw Footages upon request (Worth RM 1,000)",
+          },
+        ],
+        footnote: "",
+        summaryPriceBold: "RM 2499 ( NP : RM 3999 )",
+        summaryLine1Parts: [{ text: "Nikah & Sanding", bold: true }],
+        summaryLine2Parts: [
+          { text: "Photo Sahaja ", bold: false },
+          { text: "atau", bold: true },
+          { text: " Video Sahaja", bold: false },
+        ],
+      },
+
+      // Slide 19: One-Event Photo or Video RM 1999
+      {
+        id: "one-event-solo-1699",
+        bannerBg: "#ea4c89",
+        bannerTextColor: "#1a1a1a",
+        topBanner:
+          "This Package Applicable for Photography Only or Videography Only.",
+        titleItalic: "One - Event",
+        titleRegular1: "",
+        titleBoldConnector: "",
+        titleLine2: "Photo Or Video",
+        subtitle: "Nikah/Sanding/Tandang + Outdoor",
+        price: "RM 1999",
+        normalPriceLabel: "NP : ",
+        normalPriceValue: "RM 2999",
+        showOrDivider: true,
+        photographyItems: [
+          { boldPrefix: "6 Hours", text: " Of Coverage" },
+          {
+            boldPrefix: "1 Senior Photographer + 1 Assist Photographer",
+            text: "",
+          },
+          { boldPrefix: "", text: "Films Classic Tone ( Indoor & Outdoor )" },
+          {
+            boldPrefix: "",
+            text: "Clean Bright Tone ( Group Photos & Pelamin Potraiture )",
+          },
+          { boldPrefix: "Min 300 Edited Per Events", text: "" },
+          { boldPrefix: "", text: "7 Days Teaser Highlights" },
+          { boldPrefix: "", text: "14 Days Edited Photos Delivered" },
+        ],
+        videographyItems: [
+          { boldPrefix: "6 Hours", text: " Of Coverage" },
+          {
+            boldPrefix: "1 Senior Videographer + 1 Assist Videographer",
+            text: "",
+          },
+          { boldPrefix: "", text: "Clean & Classic Vibes Tone" },
+          {
+            boldPrefix: "Free Drone Shots",
+            text: " For Establisment Intro/Outro",
+          },
+          { boldPrefix: "", text: "4 Month Link Warranty With Zero Cost" },
+          { boldPrefix: "", text: "7 Days Teaser Highlights" },
+          { boldPrefix: "", text: "14 Days Edited Photos Delivered" },
+          { boldPrefix: "1 Nikah/Sanding/Tandang Highlight", text: "" },
+          { boldPrefix: "1 Teaser", text: "" },
+        ],
+        freeGiftItems: [
+          { boldPrefix: "Free", text: " Transportation Fee ( Worth RM 200 )*" },
+          {
+            boldPrefix: "Free",
+            text: " Outdoor/Portraiture Session ( Worth RM 450 )",
+          },
+          { boldPrefix: "Free", text: " Postage Album & Frame" },
+          { boldPrefix: "Free", text: " Meeting Consultation before Event" },
+        ],
+        footnote: "*for KL, Selangor & Negeri Sembilan only",
+        summaryPriceBold: "RM 1999 ( NP : RM 2999 )",
+        summaryLine1Parts: [
+          { text: "Nikah ", bold: false },
+          { text: "atau ", bold: true, italic: true },
+          { text: "Sanding ", bold: false },
+          { text: "atau ", bold: true, italic: true },
+          { text: "Tandang Sahaja", bold: false },
+        ],
+        summaryLine2Parts: [
+          {
+            text: "2 Photographer Sahaja atau\n2 Videographer Sahaja",
+            bold: false,
+          },
+        ],
+      },
+
+      // Slide 20: One-Event Photo & Video RM 1999
+      {
+        id: "one-event-combo-1699",
+        bannerBg: "#e8830c",
+        bannerTextColor: "#1a1a1a",
+        topBanner: "Exclusive only for 2026 Booking!",
+        titleItalic: "One-Event",
+        titleRegular1: "",
+        titleBoldConnector: "",
+        titleLine2: "Photo & Video",
+        subtitle: "Nikah/Sanding/Tandang + Outdoor",
+        price: "RM 1999",
+        normalPriceLabel: "NP : ",
+        normalPriceValue: "RM 2999",
+        showOrDivider: false,
+        photographyItems: [
+          { boldPrefix: "6 Hours", text: " Of Coverage" },
+          { boldPrefix: "1 Senior Photographer", text: "" },
+          { boldPrefix: "", text: "Films Classic Tone ( Indoor & Outdoor )" },
+          {
+            boldPrefix: "",
+            text: "Clean Bright Tone ( Group Photos & Pelamin Potraiture )",
+          },
+          { boldPrefix: "Min 300 Edited Per Events", text: "" },
+          { boldPrefix: "", text: "7 Days Teaser Highlights" },
+          { boldPrefix: "", text: "14 Days Edited Photos Delivered" },
+        ],
+        videographyItems: [
+          { boldPrefix: "6 Hours", text: " Of Coverage" },
+          { boldPrefix: "1 Senior Videographer", text: "" },
+          { boldPrefix: "", text: "Clean & Classic Vibes Tone" },
+          {
+            boldPrefix: "Free Drone Shots",
+            text: " For Establisment Intro/Outro",
+          },
+          { boldPrefix: "", text: "4 Month Link Warranty With Zero Cost" },
+          { boldPrefix: "", text: "7 Days Teaser Highlights" },
+          { boldPrefix: "", text: "14 Days Edited Photos Delivered" },
+          { boldPrefix: "1 Nikah/Sanding/Tandang Highlight", text: "" },
+          { boldPrefix: "1 Teaser", text: "" },
+        ],
+        freeGiftItems: [
+          { boldPrefix: "Free", text: " Transportation Fee ( Worth RM 200 )*" },
+          {
+            boldPrefix: "Free",
+            text: " Outdoor/Portraiture Session ( Worth RM 450 )",
+          },
+          { boldPrefix: "Free", text: " Postage Album & Frame" },
+          { boldPrefix: "Free", text: " Meeting Consultation before Event" },
+        ],
+        footnote: "*for KL, Selangor & Negeri Sembilan only",
+        summaryPriceBold: "RM 1999 ( NP : RM 2999 )",
+        summaryLine1Parts: [
+          { text: "Nikah ", bold: false },
+          { text: "atau ", bold: true, italic: true },
+          { text: "Sanding ", bold: false },
+          { text: "atau ", bold: true, italic: true },
+          { text: "Tandang Sahaja", bold: false },
+        ],
+        summaryLine2Parts: [
+          { text: "1 Photographer ", bold: false },
+          { text: "& ", bold: true },
+          { text: "1 Videographer", bold: false },
+        ],
+      },
+    ],
+    finalCtaLine1: "Tiada Soalan",
+    finalCtaLine2: "Nak Book Terus!",
+  },
 };
 
 export function getWhatsAppUrl(customMessage) {
