@@ -55,6 +55,14 @@ function githubPagesRootSyncPlugin() {
           fs.copyFileSync(path.join(srcMy, f), path.join(dstMy, f));
         }
       }
+      const srcSg1999 = path.resolve(__dirname, 'public/images/sg1999');
+      const dstSg1999 = path.resolve(__dirname, 'images/sg1999');
+      if (fs.existsSync(srcSg1999)) {
+        fs.mkdirSync(dstSg1999, { recursive: true });
+        for (const f of fs.readdirSync(srcSg1999)) {
+          fs.copyFileSync(path.join(srcSg1999, f), path.join(dstSg1999, f));
+        }
+      }
     },
   };
 }

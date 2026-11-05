@@ -1,1228 +1,1526 @@
 import React, { useState, useEffect } from "react";
 import { siteConfig, getWhatsAppUrl } from "./config/siteConfig";
-import { X } from "lucide-react";
 
-const EDITORIAL_SERIF = {
-  fontFamily:
-    "'Cormorant Garamond', 'Playfair Display', 'Instrument Serif', Georgia, serif",
+const COUNTDOWN_STORAGE_KEY = "lxfilms_sg1999_promo_deadline_v1";
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+const SERIF_STYLE = {
+  fontFamily: "'Cormorant Garamond', Georgia, serif",
+  fontVariantNumeric: "lining-nums",
 };
 
-const DISPLAY_SERIF = {
-  fontFamily:
-    "'Playfair Display', 'Cormorant Garamond', 'Instrument Serif', Georgia, serif",
-};
-
-const BODY_SANS = {
-  fontFamily:
-    "'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif",
-};
-
-/**
- * 7-Day Evergreen Countdown Hook
- * - Starts at 07 Hari 23 Jam 59 Minit 59 Saat
- * - Counts down across 7 days (07 -> 06 -> 05 -> 04 -> 03 -> 02 -> 01)
- * - Resets automatically to a new 7-day cycle right before hitting 00 Hari (never shows 0 days)
- */
-function useCountdown() {
-  const STORAGE_KEY = "lxfilmspro_rm3499_7days_v1";
-  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-  const SEVEN_DAYS_MS = 7 * ONE_DAY_MS;
-  const INITIAL_SPAN_MS = SEVEN_DAYS_MS + ONE_DAY_MS - 1000;
-
-  const [timeLeft, setTimeLeft] = useState({
-    days: "07",
-    hours: "23",
-    minutes: "59",
-    seconds: "59",
-  });
-
-  useEffect(() => {
-    let deadline = Number(localStorage.getItem(STORAGE_KEY));
+function getOrCreateDeadline() {
+  try {
+    const saved = localStorage.getItem(COUNTDOWN_STORAGE_KEY);
     const now = Date.now();
-
-    if (
-      !deadline ||
-      Number.isNaN(deadline) ||
-      deadline - now < ONE_DAY_MS ||
-      deadline - now > INITIAL_SPAN_MS
-    ) {
-      deadline = now + INITIAL_SPAN_MS;
-      localStorage.setItem(STORAGE_KEY, String(deadline));
-    }
-
-    const tick = () => {
-      const current = Date.now();
-      let diff = deadline - current;
-
-      // Reset to a brand-new 7-day cycle right before days ever reaches 0
-      if (diff < ONE_DAY_MS) {
-        deadline = current + INITIAL_SPAN_MS;
-        localStorage.setItem(STORAGE_KEY, String(deadline));
-        diff = INITIAL_SPAN_MS;
+    if (saved) {
+      const parsed = parseInt(saved, 10);
+      if (!isNaN(parsed) && parsed > now) {
+        return parsed;
       }
-
-      const d = Math.floor(diff / ONE_DAY_MS);
-      const hrs = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const mins = Math.floor((diff / (1000 * 60)) % 60);
-      const secs = Math.floor((diff / 1000) % 60);
-
-      setTimeLeft({
-        days: String(d).padStart(2, "0"),
-        hours: String(hrs).padStart(2, "0"),
-        minutes: String(mins).padStart(2, "0"),
-        seconds: String(secs).padStart(2, "0"),
-      });
-    };
-
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  return timeLeft;
+    }
+    const nextDeadline = now + SEVEN_DAYS_MS;
+    localStorage.setItem(COUNTDOWN_STORAGE_KEY, String(nextDeadline));
+    return nextDeadline;
+  } catch {
+    return Date.now() + SEVEN_DAYS_MS;
+  }
 }
 
-function TopBarCountdown({ timeLeft }) {
+function getRemainingParts(deadline) {
+  const diff = Math.max(0, deadline - Date.now());
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / 1000 / 60) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+  return {
+    days: String(days).padStart(2, "0"),
+    hours: String(hours).padStart(2, "0"),
+    minutes: String(minutes).padStart(2, "0"),
+    seconds: String(seconds).padStart(2, "0"),
+  };
+}
+
+/**
+ * Animated Diagonal Ticker Ribbon (2000 SGD OFF)
+ * Matches Slide 12 alternating thin/light and heavy/bold "2000 SGD OFF"
+ */
+function AnimatedPromoRibbon({ angle = -4.7, className = "" }) {
+  const items = Array.from({ length: 12 });
   return (
-    <div className="inline-flex items-center gap-1 font-sans text-[10px] sm:text-xs text-white tabular-nums shrink-0">
-      <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-white/[0.08] border border-white/30 font-semibold tracking-tight whitespace-nowrap">
-        {timeLeft.days} <span className="font-light italic text-white/80">Hari</span>
-      </span>
-      <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-white/[0.08] border border-white/30 font-semibold tracking-tight whitespace-nowrap">
-        {timeLeft.hours} <span className="font-light italic text-white/80">Jam</span>
-      </span>
-      <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-white/[0.08] border border-white/30 font-semibold tracking-tight whitespace-nowrap">
-        {timeLeft.minutes} <span className="font-light italic text-white/80">Minit</span>
-      </span>
-      <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-[#cf0540] border border-white/40 text-white font-bold tracking-tight shadow-sm whitespace-nowrap">
-        {timeLeft.seconds} <span className="font-light italic">Saat</span>
-      </span>
+    <div
+      className={`pointer-events-none absolute left-1/2 z-20 w-[135%] -translate-x-1/2 overflow-hidden bg-[#d40038] py-[5px] shadow-[0_6px_18px_rgba(0,0,0,0.45)] ${className}`}
+      style={{ transform: `rotate(${angle}deg)` }}
+    >
+      <div className="animate-marquee-left flex items-center whitespace-nowrap">
+        {items.map((_, idx) => {
+          const isBold = idx % 2 === 1;
+          return (
+            <span
+              key={idx}
+              className={`mx-3 inline-block font-sans uppercase text-white ${
+                isBold
+                  ? "text-[18.5px] font-extrabold tracking-[-0.02em]"
+                  : "text-[20px] font-light tracking-[-0.01em] text-white/95"
+              }`}
+            >
+              {siteConfig.priceOffer.ribbonText}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function PromoCountdownSection({ timeLeft, note }) {
+/**
+ * Rich Text Renderer helper for inline bold/italic segments
+ */
+function RichSegments({ segments }) {
+  return (
+    <>
+      {segments.map((seg, i) => (
+        <span
+          key={i}
+          className={`${
+            seg.bold ? "font-bold text-white" : "font-light text-white/95"
+          } ${seg.italic ? "italic" : ""}`}
+        >
+          {seg.text}
+        </span>
+      ))}
+    </>
+  );
+}
+
+/**
+ * Slide 19: Package Details Card (100% matching Slide 19 Canva SVG design)
+ */
+function PackageCard({ pkg }) {
+  return (
+    <div className="w-full text-[#151515]">
+      {/* Top Full-Width Yellow Banner */}
+      <div
+        className="w-full py-[8px] text-center text-[13.5px] font-bold tracking-[-0.01em]"
+        style={{
+          ...SERIF_STYLE,
+          backgroundColor: "#fae053",
+          color: "#151515",
+        }}
+      >
+        {pkg.topBanner}
+      </div>
+
+      {/* Main Cream Card Body */}
+      <div className="w-full bg-[#f4f2ed] px-[38px] pt-[18px] pb-[20px]">
+        {/* Header Row: Left Title & Subtitle | Right Price & Red Strikethrough NP */}
+        <div className="flex items-start justify-between">
+          {/* Left: Priority Premium Photo & Video */}
+          <div className="text-left">
+            <h3
+              className="text-[23px] leading-[1.04] tracking-[-0.02em] text-[#181818]"
+              style={SERIF_STYLE}
+            >
+              <span className="font-normal italic">{pkg.titleItalic}</span>
+              <span className="font-medium">{pkg.titleRegular1}</span>
+              <br />
+              <span className="font-medium">{pkg.titleLine2}</span>
+            </h3>
+            <p
+              className="mt-[6px] text-[12px] leading-none italic text-[#222222]"
+              style={SERIF_STYLE}
+            >
+              {pkg.subtitleItalic}
+            </p>
+          </div>
+
+          {/* Right: SGD 1999 & NP : SGD 3999 */}
+          <div className="pt-[2px] text-right">
+            <div
+              className="text-[28px] leading-none font-normal tracking-[-0.02em] text-[#181818]"
+              style={SERIF_STYLE}
+            >
+              {pkg.price}
+            </div>
+            <div className="mt-[4px] font-sans text-[10.5px] font-normal tracking-[0.01em] text-[#e05245]">
+              <span>{pkg.normalPriceLabel}</span>
+              <span className="line-through decoration-[#e05245] decoration-[1.2px]">
+                {pkg.normalPriceValue}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Single-Column PHOTOGRAPHY Section */}
+        <div className="mt-[18px] text-left">
+          <h4
+            className="text-[10.5px] font-medium tracking-[0.06em] text-[#181818] uppercase"
+            style={SERIF_STYLE}
+          >
+            {pkg.photographyHeading}
+          </h4>
+          <ul
+            className="mt-[6px] space-y-[1.5px] text-[12px] leading-[1.26] text-[#181818]"
+            style={SERIF_STYLE}
+          >
+            {pkg.photographyItems.map((item, idx) => (
+              <li
+                key={idx}
+                className={
+                  item.bold ? "font-bold italic text-[#0d0d0d]" : "font-normal italic text-[#222222]"
+                }
+              >
+                {item.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Single-Column VIDEOGRAPHY Section */}
+        <div className="mt-[16px] text-left">
+          <h4
+            className="text-[10.5px] font-medium tracking-[0.06em] text-[#181818] uppercase"
+            style={SERIF_STYLE}
+          >
+            {pkg.videographyHeading}
+          </h4>
+          <ul
+            className="mt-[6px] space-y-[1.5px] text-[12px] leading-[1.26] text-[#181818]"
+            style={SERIF_STYLE}
+          >
+            {pkg.videographyItems.map((item, idx) => (
+              <li
+                key={idx}
+                className={
+                  item.bold ? "font-bold italic text-[#0d0d0d]" : "font-normal italic text-[#222222]"
+                }
+              >
+                {item.text}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Single-Column FREEGIFT Section */}
+        <div className="mt-[18px] text-left">
+          <h5
+            className="text-[10.5px] font-medium tracking-[0.06em] text-[#181818] uppercase"
+            style={SERIF_STYLE}
+          >
+            {pkg.freeGiftHeading}
+          </h5>
+          <ul
+            className="mt-[6px] pl-[4px] space-y-[1.5px] text-[12px] leading-[1.26] text-[#181818]"
+            style={SERIF_STYLE}
+          >
+            {pkg.freeGiftItems.map((gift, idx) => (
+              <li key={idx} className="italic">
+                {gift.boldPrefix && (
+                  <span className="font-bold text-[#0d0d0d]">
+                    {gift.boldPrefix}
+                  </span>
+                )}
+                <span className="font-normal text-[#222222]">{gift.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Bottom Exclusive by lxFILMS Logo */}
+        <div className="mt-[18px] flex justify-center">
+          <img
+            src="images/sg1999/logo_exclusive_lxfilms_dark.webp"
+            alt="exclusive by lxFILMS"
+            className="h-[19px] w-auto object-contain opacity-90"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Top Non-Sticky Countdown Bar (Atas Sekali, Non-Sticky)
+ */
+function TopCountdownBar() {
+  const [deadline, setDeadline] = useState(() => getOrCreateDeadline());
+  const [timeLeft, setTimeLeft] = useState(() => getRemainingParts(deadline));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = Date.now();
+      if (now >= deadline) {
+        const next = getOrCreateDeadline();
+        setDeadline(next);
+        setTimeLeft(getRemainingParts(next));
+      } else {
+        setTimeLeft(getRemainingParts(deadline));
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [deadline]);
+
+  if (!siteConfig.topCountdownBar?.enabled) return null;
+
+  const { label, daysLabel, hoursLabel, minutesLabel, secondsLabel } =
+    siteConfig.topCountdownBar;
+
   const units = [
-    { value: timeLeft.days, label: "Hari" },
-    { value: timeLeft.hours, label: "Jam" },
-    { value: timeLeft.minutes, label: "Minit" },
+    { val: timeLeft.days, lbl: daysLabel },
+    { val: timeLeft.hours, lbl: hoursLabel },
+    { val: timeLeft.minutes, lbl: minutesLabel },
+    { val: timeLeft.seconds, lbl: secondsLabel, active: true },
+  ];
+
+  return (
+    <div className="relative w-full bg-gradient-to-r from-[#140408] via-[#24060e] to-[#140408] px-3 py-2.5 text-center">
+      <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+        <span className="font-sans text-[10.5px] font-bold tracking-[0.06em] text-white/90 uppercase">
+          {label}
+        </span>
+        <div className="flex items-center gap-1">
+          {units.map((u, idx) => (
+            <React.Fragment key={idx}>
+              <div
+                className={`flex items-baseline gap-0.5 rounded-[6px] px-1.5 py-0.5 font-sans tabular-nums ${
+                  u.active
+                    ? "bg-[#ce0037] text-white shadow-[0_0_10px_rgba(206,0,55,0.6)]"
+                    : "bg-white/10 text-white"
+                }`}
+              >
+                <span className="text-[12px] font-extrabold leading-none">
+                  {u.val}
+                </span>
+                <span className="text-[8.5px] font-medium text-white/80 uppercase">
+                  {u.lbl}
+                </span>
+              </div>
+              {idx < units.length - 1 && (
+                <span className="text-[10px] font-bold text-white/40">:</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Spinning / Counting Number Reel Animation that rolls down and lands on targetNumber (5)
+ */
+function SpinningSlotNumber({ target = 5 }) {
+  // Sequence of numbers that spin/roll vertically before landing on 5
+  const reelNumbers = [
+    24,
+    21,
+    18,
+    15,
+    13,
+    11,
+    10,
+    9,
+    8,
+    7,
+    6,
+    target,
+  ];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    let step = 0;
+    const totalSteps = reelNumbers.length - 1;
+    let timeoutId;
+
+    const runStep = () => {
+      if (step < totalSteps) {
+        step += 1;
+        setCurrentIndex(step);
+        // Gradually slow down like a real spinning wheel / odometer counting down to 5
+        const delay = 55 + Math.pow(step / totalSteps, 2.2) * 210;
+        timeoutId = setTimeout(runStep, delay);
+      } else {
+        setSettled(true);
+      }
+    };
+
+    timeoutId = setTimeout(runStep, 180);
+    return () => clearTimeout(timeoutId);
+  }, [target]);
+
+  return (
+    <div className="my-3 flex items-center justify-center">
+      <div
+        className={`relative flex h-[88px] w-[88px] items-center justify-center overflow-hidden rounded-[22px] border transition-all duration-300 ${
+          settled
+            ? "scale-105 border-[#ff4d79]/80 bg-gradient-to-b from-[#ce0037] to-[#820022] shadow-[0_0_32px_rgba(206,0,55,0.65),inset_0_1px_2px_rgba(255,255,255,0.4)]"
+            : "border-white/30 bg-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]"
+        }`}
+      >
+        {/* Vertical Odometer Drum Strip */}
+        <div
+          className="absolute inset-x-0 top-0 flex flex-col items-center transition-transform duration-150 ease-out"
+          style={{
+            transform: `translateY(-${currentIndex * 88}px)`,
+          }}
+        >
+          {reelNumbers.map((num, idx) => (
+            <div
+              key={idx}
+              className="flex h-[88px] w-full items-center justify-center font-sans text-[48px] leading-none font-extrabold tracking-tight text-white tabular-nums"
+            >
+              {num}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Slide 20 Top: Live 7-Day Countdown Section
+ */
+function PromoCountdownSection() {
+  const [deadline, setDeadline] = useState(() => getOrCreateDeadline());
+  const [timeLeft, setTimeLeft] = useState(() => getRemainingParts(deadline));
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = Date.now();
+      if (now >= deadline) {
+        const next = getOrCreateDeadline();
+        setDeadline(next);
+        setTimeLeft(getRemainingParts(next));
+      } else {
+        setTimeLeft(getRemainingParts(deadline));
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [deadline]);
+
+  const boxes = [
+    { value: timeLeft.days, label: "Hari", highlight: false },
+    { value: timeLeft.hours, label: "Jam", highlight: false },
+    { value: timeLeft.minutes, label: "Minit", highlight: false },
     { value: timeLeft.seconds, label: "Saat", highlight: true },
   ];
 
   return (
-    <div className="w-full px-6 sm:px-8 flex flex-col items-center">
-      <div className="w-full grid grid-cols-4 gap-2.5 sm:gap-3">
-        {units.map((unit) => (
+    <section className="relative w-full bg-[#000000] px-5 pt-6 pb-8 text-center">
+      {/* 4 Glassmorphic Countdown Boxes */}
+      <div className="mx-auto grid max-w-[356px] grid-cols-4 gap-2.5">
+        {boxes.map((b, idx) => (
           <div
-            key={unit.label}
-            className={`relative rounded-[22px] py-3.5 sm:py-4 px-2 flex flex-col items-center justify-center backdrop-blur-md transition-all ${
-              unit.highlight
-                ? "border border-white/85 bg-gradient-to-b from-[#cf0540]/85 to-[#8f042c]/90 shadow-[0_0_26px_rgba(207,5,64,0.5),inset_0_1px_1px_rgba(255,255,255,0.75)]"
-                : "border border-white/55 bg-gradient-to-b from-[#2c3035]/90 to-[#17191c]/95 shadow-[0_10px_28px_rgba(0,0,0,0.65),inset_0_1px_1px_rgba(255,255,255,0.45)]"
+            key={idx}
+            className={`relative flex flex-col items-center justify-center rounded-[16px] border py-3 backdrop-blur-md transition-all ${
+              b.highlight
+                ? "border-[#ff4d79]/80 bg-gradient-to-b from-[#d40038] to-[#900024] shadow-[0_0_24px_rgba(212,0,56,0.55)]"
+                : "border-white/25 bg-gradient-to-b from-white/[0.15] to-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_20px_rgba(0,0,0,0.5)]"
             }`}
           >
-            <span className="text-[34px] sm:text-[40px] font-bold text-white lining-nums tabular-nums leading-none tracking-tight">
-              {unit.value}
+            <span className="font-sans text-[28px] leading-none font-bold tracking-tight text-white tabular-nums">
+              {b.value}
             </span>
-            <span
-              style={EDITORIAL_SERIF}
-              className="text-[15px] sm:text-[17px] italic font-normal text-white/90 mt-1 leading-none"
-            >
-              {unit.label}
+            <span className="mt-1.5 font-sans text-[10px] font-medium tracking-[0.08em] text-white/85 uppercase">
+              {b.label}
             </span>
           </div>
         ))}
       </div>
-
-      {note && (
-        <p className="mt-3.5 text-center text-[12.5px] sm:text-[13.5px] font-light text-white/85 tracking-tight">
-          {note}
-        </p>
-      )}
-    </div>
+    </section>
   );
 }
 
-/**
- * Animated Repeating Ticker Ribbon: "RM 1500 OFF"
- * Moves smoothly and endlessly to the left at 60fps on GPU
- */
-function RepeatedDiscountRibbon({ angle = "-4.72deg", className = "" }) {
-  const segment = (
-    <div className="inline-flex items-center shrink-0">
-      <span className="font-light tracking-[-0.03em] px-3.5 sm:px-4">
-        RM1500 OFF
-      </span>
-      <span className="font-extrabold tracking-[-0.035em] px-3.5 sm:px-4">
-        RM 1500 OFF
-      </span>
-      <span className="font-light tracking-[-0.03em] px-3.5 sm:px-4">
-        RM1500 OFF
-      </span>
-      <span className="font-extrabold tracking-[-0.035em] px-3.5 sm:px-4">
-        RM 1500 OFF
-      </span>
-    </div>
+export function App() {
+  const [showUrgencyModal, setShowUrgencyModal] = useState(
+    () => siteConfig.urgencyPopup?.enabled ?? false
   );
-
-  return (
-    <div
-      style={{ transform: `rotate(${angle})` }}
-      className={`absolute inset-x-[-20%] pointer-events-none select-none z-10 overflow-hidden bg-[#cf0540] py-2 sm:py-2.5 text-white text-[20px] sm:text-[23px] leading-none whitespace-nowrap shadow-[0_4px_16px_rgba(0,0,0,0.7)] ${className}`}
-    >
-      <div className="animate-marquee-left">
-        {segment}
-        {segment}
-      </div>
-    </div>
-  );
-}
-
-function SoloOrOneEventPackageCard({ pkg }) {
-  return (
-    <div className="w-full px-3 sm:px-3.5">
-      {/* Cream Card with Colored Top Banner */}
-      <div className="w-full rounded-[26px] overflow-hidden bg-[#f4f2ed] text-[#1e1e1e] shadow-[0_16px_44px_rgba(0,0,0,0.75)]">
-        {/* Top Colored Banner */}
-        <div
-          style={{ backgroundColor: pkg.bannerBg, color: pkg.bannerTextColor }}
-          className="w-full py-2.5 px-4 text-center font-medium text-[11.5px] sm:text-[13px] tracking-tight leading-snug"
-        >
-          {pkg.topBanner}
-        </div>
-
-        {/* Inner Card Body */}
-        <div className="relative px-6 sm:px-8 pt-6 pb-6">
-          {/* Header Row: Title + Price */}
-          <div className="flex items-start justify-between gap-2 mb-5">
-            <div>
-              <h3
-                style={EDITORIAL_SERIF}
-                className="text-[28px] sm:text-[32px] leading-[0.98] font-normal text-[#231f20]"
-              >
-                <span className="italic">{pkg.titleItalic}</span>
-                <span>{pkg.titleRegular1}</span>
-                {pkg.titleBoldConnector && (
-                  <strong className="font-sans font-bold text-[21px] sm:text-[24px]">
-                    {pkg.titleBoldConnector}
-                  </strong>
-                )}
-                <br />
-                <span>{pkg.titleLine2}</span>
-              </h3>
-              <p
-                style={EDITORIAL_SERIF}
-                className="text-[13.5px] sm:text-[15px] italic text-[#231f20]/90 mt-1"
-              >
-                {pkg.subtitle}
-              </p>
-            </div>
-
-            <div className="text-right shrink-0 flex flex-col items-end">
-              <div
-                style={EDITORIAL_SERIF}
-                className="text-[30px] sm:text-[35px] leading-none font-normal text-[#231f20] tracking-tight lining-nums"
-              >
-                {pkg.price}
-              </div>
-              <div
-                style={EDITORIAL_SERIF}
-                className="text-[12.5px] sm:text-[14px] text-[#ff3b3b] font-normal mt-0.5 lining-nums"
-              >
-                {pkg.normalPriceLabel}
-                <span className="line-through decoration-[#ff3b3b] decoration-[1.5px]">
-                  {pkg.normalPriceValue}
-                </span>
-              </div>
-              <img
-                src="./images/sg/s12_money_back_badge.webp"
-                alt="100% Money Back Guarantee"
-                loading="lazy"
-                className="w-14 h-14 sm:w-16 sm:h-16 object-contain mt-2 select-none"
-              />
-            </div>
-          </div>
-
-          {/* PHOTOGRAPHY */}
-          <div className="-mt-6 mb-4 pr-14">
-            <h4
-              style={EDITORIAL_SERIF}
-              className="text-[13px] sm:text-[14px] tracking-[0.26em] uppercase text-[#231f20] font-normal mb-2"
-            >
-              PHOTOGRAPHY
-            </h4>
-            <ul
-              style={EDITORIAL_SERIF}
-              className="space-y-0.5 text-[14px] sm:text-[15.5px] leading-[1.28] italic text-[#231f20]"
-            >
-              {pkg.photographyItems.map((item, idx) => (
-                <li key={idx}>
-                  {item.boldPrefix && (
-                    <strong className="font-bold text-black">
-                      {item.boldPrefix}
-                    </strong>
-                  )}
-                  <span>{item.text}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Optional "or" Divider */}
-          {pkg.showOrDivider ? (
-            <div className="flex items-center gap-3 my-3.5">
-              <div className="h-[1px] flex-1 bg-[#231f20]/40" />
-              <span
-                style={EDITORIAL_SERIF}
-                className="text-[13px] italic text-[#231f20]/80"
-              >
-                or
-              </span>
-              <div className="h-[1px] flex-1 bg-[#231f20]/40" />
-            </div>
-          ) : (
-            <div className="my-4" />
-          )}
-
-          {/* VIDEOGRAPHY */}
-          <div className="mb-4">
-            <h4
-              style={EDITORIAL_SERIF}
-              className="text-[13px] sm:text-[14px] tracking-[0.26em] uppercase text-[#231f20] font-normal mb-2"
-            >
-              VIDEOGRAPHY
-            </h4>
-            <ul
-              style={EDITORIAL_SERIF}
-              className="space-y-0.5 text-[14px] sm:text-[15.5px] leading-[1.28] italic text-[#231f20]"
-            >
-              {pkg.videographyItems.map((item, idx) => (
-                <li key={idx}>
-                  {item.boldPrefix && (
-                    <strong className="font-bold text-black">
-                      {item.boldPrefix}
-                    </strong>
-                  )}
-                  <span>{item.text}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* FREEGIFT */}
-          <div className="pt-2 border-t border-[#231f20]/30 mb-5">
-            <h4
-              style={EDITORIAL_SERIF}
-              className="text-[13px] sm:text-[14px] tracking-[0.26em] uppercase text-[#231f20] font-normal mb-2"
-            >
-              FREEGIFT :
-            </h4>
-            <ul
-              style={EDITORIAL_SERIF}
-              className="space-y-0.5 text-[14px] sm:text-[15.5px] leading-[1.28] italic text-[#231f20]"
-            >
-              {pkg.freeGiftItems.map((item, idx) => (
-                <li key={idx}>
-                  {item.boldPrefix && (
-                    <strong className="font-bold text-black">
-                      {item.boldPrefix}
-                    </strong>
-                  )}
-                  <span>{item.text}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {pkg.footnote && (
-            <p
-              style={EDITORIAL_SERIF}
-              className="text-[12.5px] sm:text-[13.5px] italic text-[#231f20]/85 mb-5"
-            >
-              {pkg.footnote}
-            </p>
-          )}
-
-          <div className="flex justify-center pt-1">
-            <img
-              src="./images/my/logo_exclusive_lxfilms_dark.webp"
-              alt="exclusive by lxFILMS"
-              loading="lazy"
-              className="h-5 sm:h-5.5 w-auto object-contain select-none"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Summary Text Below Card */}
-      <div className="px-6 sm:px-7 pt-5 pb-7 text-white space-y-2">
-        <p className="text-[20px] sm:text-[22px] font-extrabold tracking-tight leading-tight">
-          {pkg.summaryPriceBold}
-        </p>
-        <p className="text-[20px] sm:text-[22px] font-light tracking-tight leading-tight">
-          {pkg.summaryLine1Parts.map((part, i) => (
-            <span
-              key={i}
-              className={`${part.bold ? "font-extrabold" : "font-light"} ${
-                part.italic ? "italic" : ""
-              }`}
-            >
-              {part.text}
-            </span>
-          ))}
-        </p>
-        <p className="text-[20px] sm:text-[22px] font-light tracking-tight leading-snug whitespace-pre-line">
-          {pkg.summaryLine2Parts.map((part, i) => (
-            <span
-              key={i}
-              className={part.bold ? "font-extrabold" : "font-light"}
-            >
-              {part.text}
-            </span>
-          ))}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-export default function App() {
-  const [showUrgencyModal, setShowUrgencyModal] = useState(false);
-  const timeLeft = useCountdown();
   const waUrl = getWhatsAppUrl();
 
-  useEffect(() => {
-    if (!siteConfig.urgencyPopup?.enabled) return;
-    const timer = setTimeout(() => {
-      setShowUrgencyModal(true);
-    }, 450);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleCloseUrgencyModal = () => {
-    setShowUrgencyModal(false);
-  };
-
-  const {
-    urgencyPopup,
-    hero,
-    coverageIntro,
-    deliverables,
-    freeGifts,
-    albumShowcase,
-    promoValue,
-    discountOffer,
-    mainPackage,
-    depositSection,
-    rsvpPromo,
-    testimonials,
-    faqSection,
-    soloPackagesSection,
-  } = siteConfig;
-
+  // Exact card text positions for Slide 6 (8 Glassmorphic Deliverable Cards)
   const deliverablePositions = [
-    { top: "18.2%", left: "12.8%" },
-    { top: "19.8%", left: "55.6%" },
-    { top: "39.0%", left: "13.8%" },
-    { top: "39.0%", left: "58.0%" },
-    { top: "58.8%", left: "13.8%" },
-    { top: "58.8%", left: "58.0%" },
-    { top: "78.5%", left: "13.8%" },
-    { top: "78.5%", left: "58.8%" },
+    { top: "18.8%", left: "15.8%", width: "28%" },
+    { top: "19.8%", left: "56.5%", width: "31%" },
+    { top: "39.7%", left: "17.2%", width: "28%" },
+    { top: "39.7%", left: "59.9%", width: "28%" },
+    { top: "59.3%", left: "17.2%", width: "30%" },
+    { top: "59.5%", left: "59.9%", width: "28%" },
+    { top: "79.2%", left: "17.2%", width: "28%" },
+    { top: "79.2%", left: "60.4%", width: "28%" },
   ];
 
-  const freeGiftSlotTops = ["3.0%", "21.8%", "41.2%", "60.2%", "79.6%"];
+  // Exact positions for Slide 7 (5 Free Gifts)
+  const freeGiftTopPositions = ["20.6%", "31.8%", "43.4%", "54.6%", "66.2%"];
 
   return (
-    <div
-      style={BODY_SANS}
-      className="min-h-screen w-full overflow-x-hidden bg-black text-white antialiased selection:bg-white/20 selection:text-white"
-    >
-      {/* MINIMALIST URGENCY POP-OUT SCREEN MODAL (Matches Original Design, Closes Completely) */}
-      {showUrgencyModal && urgencyPopup && (
-        <div
-          onClick={handleCloseUrgencyModal}
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-5 animate-fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[376px] rounded-[32px] bg-[#16181b]/95 backdrop-blur-2xl border border-white/55 shadow-[0_28px_80px_rgba(0,0,0,0.95),inset_0_1px_1.5px_rgba(255,255,255,0.55)] px-6 sm:px-7 pt-9 pb-7 text-center overflow-hidden"
-          >
-            {/* Subtle Top Glass Highlight */}
-            <div className="pointer-events-none absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent" />
-
-            {/* Minimalist Close Button */}
+    <div className="min-h-screen w-full bg-[#000000] text-white selection:bg-[#f8da45] selection:text-black">
+      {/* Pop-Out Urgency Modal (Tinggal 5 Slot Sahaja Lagi Available + Animasi Pusing ke 5) */}
+      {showUrgencyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-5 backdrop-blur-md">
+          <div className="relative w-full max-w-[350px] overflow-hidden rounded-[24px] border border-white/20 bg-gradient-to-b from-[#1a1c20] to-[#0d0e11] px-6 pt-7 pb-6 text-center shadow-[0_24px_70px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.25)]">
             <button
               type="button"
-              onClick={handleCloseUrgencyModal}
+              onClick={() => setShowUrgencyModal(false)}
               aria-label="Tutup"
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.07] hover:bg-white/[0.15] border border-white/25 text-white/80 hover:text-white flex items-center justify-center transition-colors"
+              className="absolute top-3.5 right-3.5 flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/70 transition hover:bg-white/15 hover:text-white"
             >
-              <X className="w-4 h-4" />
+              ✕
             </button>
 
-            {/* Editorial Serif Headline (Besar, Bold & Elegant) */}
-            <h2
-              style={EDITORIAL_SERIF}
-              className="text-[42px] sm:text-[46px] leading-[0.95] tracking-[-0.02em] font-normal text-white mt-1 mb-5"
-            >
-              <span className="italic">{urgencyPopup.headlineItalic}</span>
-              <br />
-              <span>{urgencyPopup.headlineRegular}</span>
-            </h2>
+            {/* Small Badge Label */}
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-[#ce0037]/50 bg-[#ce0037]/15 px-3 py-1">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#ff3366]" />
+              <span className="font-sans text-[10px] font-bold tracking-[0.12em] text-[#ff809f] uppercase">
+                {siteConfig.urgencyPopup.topLabel}
+              </span>
+            </div>
 
-            {/* Editable Urgency Body Text */}
-            <p className="text-[14px] sm:text-[15px] leading-[1.38] font-light text-white/90 tracking-[-0.015em] mb-7">
-              {urgencyPopup.bodyText}
+            {/* "Tinggal" */}
+            <p
+              className="mt-3 text-[28px] leading-none font-semibold italic tracking-[-0.03em] text-white/95"
+              style={SERIF_STYLE}
+            >
+              {siteConfig.urgencyPopup.prefixText}
             </p>
 
-            {/* Primary Minimalist Glassmorphic Pill Button */}
+            {/* Spinning / Counting Number 5 */}
+            <SpinningSlotNumber
+              target={siteConfig.urgencyPopup.targetNumber || 5}
+            />
+
+            {/* "Slot Sahaja Lagi Available!" */}
+            <h2 className="font-sans text-[20px] leading-[1.2] font-bold tracking-[-0.02em] text-white">
+              <span className="text-[#ff4d79]">
+                {siteConfig.urgencyPopup.slotWord}{" "}
+              </span>
+              <span>{siteConfig.urgencyPopup.suffixText}</span>
+            </h2>
+
+            <p className="mt-2.5 font-sans text-[13px] leading-[1.4] font-light text-white/80">
+              {siteConfig.urgencyPopup.subText}
+            </p>
+
+            {/* Book Now Button */}
             <a
               href={waUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={handleCloseUrgencyModal}
-              className="w-full py-4 px-5 rounded-full bg-gradient-to-b from-white/[0.22] to-white/[0.08] hover:from-white/[0.28] hover:to-white/[0.14] border border-white/75 text-white font-extrabold text-[16px] sm:text-[17px] tracking-[-0.02em] shadow-[0_10px_28px_rgba(0,0,0,0.65),inset_0_1px_1.5px_rgba(255,255,255,0.75)] active:scale-[0.99] transition-all flex items-center justify-center"
+              className="mt-5 flex w-full items-center justify-center rounded-full border border-white/35 bg-[#ce0037] py-3.5 font-sans text-[16px] font-bold tracking-[-0.01em] text-white shadow-[0_8px_24px_rgba(206,0,55,0.5)] transition-transform hover:brightness-110 active:scale-[0.98]"
             >
-              <span>{urgencyPopup.buttonText}</span>
+              {siteConfig.urgencyPopup.buttonText}
             </a>
 
-            {/* Secondary Dismiss Link */}
             <button
               type="button"
-              onClick={handleCloseUrgencyModal}
-              className="mt-4 text-[12.5px] font-light text-white/65 hover:text-white transition-colors"
+              onClick={() => setShowUrgencyModal(false)}
+              className="mt-3 inline-block font-sans text-[12px] font-light text-white/55 underline underline-offset-4 transition hover:text-white/90"
             >
-              {urgencyPopup.dismissText}
+              {siteConfig.urgencyPopup.dismissText}
             </button>
-
-            {/* Subtle Brand Signature */}
-            <div className="mt-5 pt-3 border-t border-white/10 flex justify-center">
-              <img
-                src="./images/my/logo_exclusive_lxfilms_white.webp"
-                alt="exclusive by lxFILMS"
-                className="h-4 w-auto select-none pointer-events-none opacity-85 mix-blend-screen"
-              />
-            </div>
           </div>
         </div>
       )}
 
-      {/* Main Mobile-First Editorial Canvas */}
-      <main className="mx-auto w-full max-w-[440px] bg-black shadow-[0_0_90px_rgba(0,0,0,0.95)] overflow-hidden pb-12">
-        {/* ===================================================================
-            SLIDE 1: HERO ("Hari Besar, Kenangan Selamanya" + RM 3499)
-        =================================================================== */}
-        <section className="relative w-full bg-black">
+      {/* Mobile-First Canvas Container (max-w-[430px] centered, seamless black background) */}
+      <main className="mx-auto w-full max-w-[430px] overflow-hidden bg-[#000000]">
+        {/* TOP NON-STICKY COUNTDOWN BAR */}
+        <TopCountdownBar />
+        {/* =====================================================================
+            SLIDE 1: HERO SECTION (Exclusive 9 Hours Wedding Photo & Video Coverage — 1999 SGD)
+           ===================================================================== */}
+        <section className="relative w-full">
           <img
-            src="./images/my/s1_hero_bg.webp"
-            alt="Hari Besar, Kenangan Selamanya — RM 3499"
-            fetchPriority="high"
-            draggable={false}
-            className="w-full h-auto block select-none pointer-events-none"
+            src="images/sg1999/s1_hero_bg.webp"
+            alt="Exclusive 9 Hours Wedding Photo & Video Coverage"
+            className="block h-auto w-full select-none"
+            fetchpriority="high"
           />
 
-          {/* Top Glassmorphic Frame Text */}
-          <div className="pointer-events-none absolute left-[8%] right-[8%] top-[1.5%] h-[22.8%] flex flex-col items-center justify-center text-center">
+          {/* Top 4-Line Editorial Serif Title */}
+          <div className="absolute inset-x-0 top-[4.8%] flex flex-col items-center text-center">
             <h1
-              style={EDITORIAL_SERIF}
-              className="text-[42px] sm:text-[45px] leading-[0.92] tracking-[-0.02em] text-white font-normal"
+              className="text-[35px] leading-[0.92] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
             >
-              <span className="italic">{hero.titleLine1Italic}</span>
+              <span className="font-semibold">
+                {siteConfig.hero.titleLine1Regular}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.hero.titleLine1Italic}
+              </span>
               <br />
-              <span>{hero.titleLine2Regular}</span>
+              <span className="font-semibold">
+                {siteConfig.hero.titleLine2Regular}
+              </span>
               <br />
-              <span className="italic">{hero.titleLine3Italic}</span>
+              <span className="font-semibold italic">
+                {siteConfig.hero.titleLine3Italic}
+              </span>
+              <br />
+              <span className="font-semibold">
+                {siteConfig.hero.titleLine4Regular}
+              </span>
             </h1>
           </div>
 
-          {/* "now it's only" */}
-          <div className="pointer-events-none absolute inset-x-0 top-[61.6%] text-center">
+          {/* "no hidden charge, no extra charge" in serif right above the 3D Glass Pill */}
+          <div className="absolute inset-x-0 top-[60.3%] text-center">
             <p
-              style={EDITORIAL_SERIF}
-              className="text-[28px] sm:text-[30px] leading-none text-white font-normal"
+              className="text-[16px] leading-[1.05] font-medium tracking-[-0.03em] whitespace-pre-line text-white"
+              style={SERIF_STYLE}
             >
-              {hero.priceLabel}
+              {siteConfig.hero.priceLabel}
             </p>
           </div>
 
-          {/* Glassmorphic Pill Price: RM 3499 */}
-          <div className="pointer-events-none absolute left-[23%] right-[23%] top-[65.9%] h-[9.6%] flex items-center justify-center">
-            <span className="text-[36px] sm:text-[40px] font-extrabold tracking-[-0.03em] text-white leading-none">
-              {hero.priceValue}
+          {/* "1999 SGD" centered inside the 3D Glassmorphic Pill */}
+          <div className="absolute inset-x-0 top-[65.3%] flex h-[7.7%] items-center justify-center">
+            <span className="font-sans text-[27px] font-bold tracking-[-0.03em] text-white">
+              {siteConfig.hero.priceValue}
             </span>
           </div>
 
-          {/* Editable Hero Body Paragraphs */}
-          <div className="pointer-events-none absolute inset-x-0 top-[75.8%] px-6 text-center space-y-4">
-            <p className="text-[14.5px] sm:text-[15.5px] leading-[1.32] font-light text-white/95 whitespace-pre-line tracking-[-0.015em]">
-              {hero.para1}
-            </p>
-            <p className="text-[14.5px] sm:text-[15.5px] leading-[1.32] font-light text-white/95 whitespace-pre-line tracking-[-0.015em]">
-              {hero.para2}
-            </p>
+          {/* Bottom 2 Emotional Paragraphs */}
+          <div className="absolute top-[75.3%] right-[6%] left-[6%] space-y-[15px] text-center font-sans text-[13.5px] leading-[1.35] font-light tracking-[-0.015em] text-white/95">
+            <p className="whitespace-pre-line">{siteConfig.hero.para1}</p>
+            <p className="whitespace-pre-line">{siteConfig.hero.para2}</p>
           </div>
+
+          {/* Bottom "exclusive by" in italic serif next to lxFILMS logo */}
+          <span
+            className="absolute bottom-[2.6%] left-[35.5%] text-[14.5px] font-normal italic tracking-[-0.02em] text-white/95"
+            style={SERIF_STYLE}
+          >
+            {siteConfig.hero.exclusiveBy}
+          </span>
         </section>
 
-        {/* ===================================================================
-            SLIDE 2: "Nikah & Sanding — 9 jam full coverage" + 3 Overlapping Photos
-        =================================================================== */}
-        <section className="relative w-full bg-black pt-9">
-          <div className="px-7 pb-4 text-center flex flex-col items-center">
-            <h2
-              style={EDITORIAL_SERIF}
-              className="text-[32px] sm:text-[35px] leading-[0.98] font-normal text-white tracking-[-0.02em] mb-5"
-            >
-              {coverageIntro.titleLine1Prefix}
-              <span className="italic">{coverageIntro.titleLine1Italic}</span>
-              <br />
-              {coverageIntro.titleLine2Prefix}
-              <span className="italic">{coverageIntro.titleLine2Italic}</span>
-              {coverageIntro.titleLine2Suffix}
-            </h2>
-
-            <p className="text-[14.5px] sm:text-[15.5px] leading-[1.3] font-light text-white/95 whitespace-pre-line mb-4 tracking-[-0.015em]">
-              {coverageIntro.para1}
-            </p>
-
-            <p className="text-[14.5px] sm:text-[15.5px] leading-[1.3] font-light text-white/95 whitespace-pre-line tracking-[-0.015em]">
-              {coverageIntro.para2}
-            </p>
-          </div>
-
+        {/* =====================================================================
+            SLIDE 2: PREMIUM FILMS CLASSIC VIBES + 6-PHOTO MOSAIC
+           ===================================================================== */}
+        <section className="relative w-full">
           <img
-            src="./images/my/s2_photos.webp"
-            alt="Nikah & Sanding 9 Jam Full Coverage"
+            src="images/sg1999/s2_classic_bg.webp"
+            alt="Premium Films Classic Vibes"
+            className="block h-auto w-full select-none"
             loading="lazy"
-            draggable={false}
-            className="w-full h-auto block select-none pointer-events-none"
           />
+
+          {/* Top Title (2 upright lines) */}
+          <div className="absolute inset-x-0 top-[6.2%] px-4 text-center">
+            <h2
+              className="text-[35px] leading-[0.94] font-semibold tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
+            >
+              <span>{siteConfig.classicVibes.titleLine1}</span>
+              <br />
+              <span>{siteConfig.classicVibes.titleLine2}</span>
+            </h2>
+          </div>
+
+          {/* Body Paragraph */}
+          <div className="absolute top-[18.6%] right-[6%] left-[6%] text-center font-sans text-[14px] leading-[1.32] font-light tracking-[-0.015em] text-white/95">
+            <p className="whitespace-pre-line">{siteConfig.classicVibes.body}</p>
+          </div>
         </section>
 
-        {/* ===================================================================
-            SLIDE 3: "Apa yang korang akan dapat" (8 Glassmorphic Cards)
-        =================================================================== */}
-        <section className="relative w-full bg-black">
+        {/* =====================================================================
+            SLIDE 3: TRUSTED BY 100+ COUPLES + 4 WIDESCREEN STILLS
+           ===================================================================== */}
+        <section className="relative w-full">
           <img
-            src="./images/my/s3_deliverables_bg.webp"
+            src="images/sg1999/s3_trusted_bg.webp"
+            alt="Trusted by 100+ Couples"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top Title */}
+          <div className="absolute inset-x-0 top-[5.2%] px-4 text-center">
+            <h2
+              className="text-[34px] leading-[0.96] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
+            >
+              <span className="font-semibold">
+                {siteConfig.trustedCouples.titleRegular}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.trustedCouples.titleItalic}
+              </span>
+            </h2>
+          </div>
+
+          {/* Body Paragraph */}
+          <div className="absolute top-[12.2%] right-[6%] left-[6%] text-center font-sans text-[14px] leading-[1.32] font-light tracking-[-0.015em] text-white/95">
+            <p className="whitespace-pre-line">
+              {siteConfig.trustedCouples.body}
+            </p>
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 4: WHY CHOOSE US INSTEAD OF OTHERS? + 100% MONEY BACK GUARANTEE
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s4_why_bg.webp"
+            alt="Why Choose Us Instead of Others"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top Title */}
+          <div className="absolute inset-x-0 top-[6.6%] px-4 text-center">
+            <h2
+              className="text-[34px] leading-[0.96] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
+            >
+              <span className="font-semibold">
+                {siteConfig.whyChooseUs.titleLine1Prefix}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.whyChooseUs.titleLine1Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.whyChooseUs.titleLine1Suffix}
+              </span>
+              <br />
+              <span className="font-semibold">
+                {siteConfig.whyChooseUs.titleLine2Regular}
+              </span>
+            </h2>
+          </div>
+
+          {/* 5 Checklist Items next to 3D Green Checkmarks */}
+          {siteConfig.whyChooseUs.items.map((item, idx) => (
+            <div
+              key={idx}
+              className="absolute right-[3%] left-[25.8%] text-left font-sans text-[13.5px] leading-[1.24] tracking-[-0.015em] whitespace-pre-line text-white"
+              style={{ top: item.top }}
+            >
+              <RichSegments segments={item.segments} />
+            </div>
+          ))}
+
+          {/* Center Reassurance Paragraph */}
+          <div className="absolute top-[70.0%] right-[6%] left-[6%] text-center font-sans text-[13.8px] leading-[1.28] tracking-[-0.015em] whitespace-pre-line text-white">
+            <span className="font-light text-white/95">
+              {siteConfig.whyChooseUs.reassurancePrefix}
+            </span>
+            <span className="font-bold text-white">
+              {siteConfig.whyChooseUs.reassuranceBold}
+            </span>
+          </div>
+
+          {/* Bold Guarantee Text next to Gold Seal Badge */}
+          <div className="absolute top-[80.6%] right-[4%] left-[39.4%] text-left font-sans text-[12.5px] leading-[1.24] font-bold tracking-[-0.015em] text-white">
+            <p className="whitespace-pre-line">
+              {siteConfig.whyChooseUs.guaranteeBold}
+            </p>
+          </div>
+
+          {/* Bottom Footnote */}
+          <div className="absolute inset-x-0 top-[93.1%] text-center font-sans text-[8.2px] font-light tracking-[-0.01em] text-white/85">
+            <p>{siteConfig.whyChooseUs.footnote}</p>
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 5: OUR APPROACH + COUPLE BY CLASSIC CAR
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s5_approach_bg.webp"
+            alt="Our Approach"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top Title */}
+          <div className="absolute inset-x-0 top-[4.8%] px-4 text-center">
+            <h2
+              className="text-[36px] leading-[0.95] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
+            >
+              <span className="font-semibold italic">
+                {siteConfig.ourApproach.titleItalic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.ourApproach.titleRegular}
+              </span>
+            </h2>
+          </div>
+
+          {/* Two Paragraphs */}
+          <div className="absolute top-[12.4%] right-[6%] left-[6%] space-y-[16px] text-center font-sans text-[14px] leading-[1.3] font-light tracking-[-0.015em] text-white/95">
+            <p className="whitespace-pre-line">
+              {siteConfig.ourApproach.para1}
+            </p>
+            <p className="whitespace-pre-line">
+              {siteConfig.ourApproach.para2}
+            </p>
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 6: APA YANG KORANG AKAN DAPAT (8 GLASSMORPHIC CARDS)
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s6_deliverables_bg.webp"
             alt="Apa yang korang akan dapat"
+            className="block h-auto w-full select-none"
             loading="lazy"
-            draggable={false}
-            className="w-full h-auto block select-none pointer-events-none"
           />
 
-          {/* Heading */}
-          <div className="pointer-events-none absolute inset-x-0 top-[3.3%] text-center">
+          {/* Section Heading */}
+          <div className="absolute inset-x-0 top-[2.8%] text-center">
             <h2
-              style={EDITORIAL_SERIF}
-              className="text-[32px] sm:text-[35px] leading-[0.95] font-normal text-white tracking-[-0.02em]"
+              className="text-[34px] leading-[0.94] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
             >
-              {deliverables.titleLine1Prefix}
-              <span className="italic">{deliverables.titleLine1Italic}</span>
+              <span className="font-semibold">
+                {siteConfig.deliverables.titleLine1Prefix}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.deliverables.titleLine1Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.deliverables.titleLine1Suffix}
+              </span>
               <br />
-              {deliverables.titleLine2Prefix}
-              <span className="italic">{deliverables.titleLine2Italic}</span>
+              <span className="font-semibold">
+                {siteConfig.deliverables.titleLine2Prefix}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.deliverables.titleLine2Italic}
+              </span>
             </h2>
           </div>
 
-          {/* 8 Editable Card Texts */}
-          {deliverables.cards.map((cardSpans, idx) => {
-            const pos = deliverablePositions[idx] || { top: "0%", left: "0%" };
+          {/* 8 Deliverable Card Text Overlays */}
+          {siteConfig.deliverables.cards.map((segments, idx) => {
+            const pos = deliverablePositions[idx];
             return (
               <div
                 key={idx}
-                style={{ top: pos.top, left: pos.left }}
-                className="pointer-events-none absolute w-[34%] text-[14px] sm:text-[15px] leading-[1.22] text-white tracking-[-0.02em] whitespace-pre-line"
+                className="absolute text-left font-sans text-[13px] leading-[1.22] tracking-[-0.015em] whitespace-pre-line text-white"
+                style={{ top: pos.top, left: pos.left, width: pos.width }}
               >
-                {cardSpans.map((sp, sIdx) => (
-                  <span
-                    key={sIdx}
-                    className={sp.bold ? "font-bold" : "font-light"}
-                  >
-                    {sp.text}
-                  </span>
-                ))}
+                <RichSegments segments={segments} />
               </div>
             );
           })}
 
-          {/* Bottom Footnote */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-[2.2%] px-4 text-center text-[11px] sm:text-[12px] leading-[1.35] text-white/95 font-light">
-            <p>{deliverables.footnoteLine1}</p>
+          {/* Bottom Footnotes */}
+          <div className="absolute inset-x-0 bottom-[2.6%] space-y-[2px] text-center font-sans text-[11px] leading-[1.28] tracking-[-0.015em] text-white/95">
+            <p className="font-light">
+              {siteConfig.deliverables.footnoteLine1}
+            </p>
             <p>
-              {deliverables.footnoteLine2Prefix}
-              <strong className="font-bold">
-                {deliverables.footnoteLine2Bold}
-              </strong>
+              <span className="font-light">
+                {siteConfig.deliverables.footnoteLine2Prefix}
+              </span>
+              <span className="font-bold">
+                {siteConfig.deliverables.footnoteLine2Bold}
+              </span>
             </p>
           </div>
         </section>
 
-        {/* ===================================================================
-            SLIDE 4: "Dan semua ni kami bagi PERCUMA:" (1–5 Cards)
-        =================================================================== */}
-        <section className="relative w-full bg-black pt-8 pb-4">
-          <div className="px-6 pb-4 text-center">
+        {/* =====================================================================
+            SLIDE 7: IF YOU BOOK TODAY! SEMUA NI FREE JE (5 FREE GIFTS)
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s7_freegifts_bg.webp"
+            alt="If You Book Today Semua ni FREE Je"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top Heading */}
+          <div className="absolute inset-x-0 top-[5.2%] text-center">
             <h2
-              style={EDITORIAL_SERIF}
-              className="text-[32px] sm:text-[35px] leading-[0.98] font-normal text-white tracking-[-0.02em]"
+              className="text-[34px] leading-[0.96] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
             >
-              {freeGifts.titleLine1Prefix}
-              <span className="italic">{freeGifts.titleLine1Italic}</span>
-              {freeGifts.titleLine1Suffix}
+              <span className="font-semibold">
+                {siteConfig.freeGifts.titleLine1Prefix}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.freeGifts.titleLine1Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.freeGifts.titleLine1Suffix}
+              </span>
               <br />
-              <span className="italic">{freeGifts.titleLine2Italic}</span>
+              <span className="font-semibold">
+                {siteConfig.freeGifts.titleLine2Prefix}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.freeGifts.titleLine2Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.freeGifts.titleLine2Suffix}
+              </span>
             </h2>
           </div>
 
-          {/* 5 Numbered Cards with Editable Text Overlay */}
-          <div className="relative w-full">
-            <img
-              src="./images/my/s4_freegift_cards_bg.webp"
-              alt="5 Free Gifts Percuma"
-              loading="lazy"
-              className="w-full h-auto block select-none"
-            />
+          {/* 5 Free Gift Card Text Overlays */}
+          {siteConfig.freeGifts.items.map((item, idx) => (
+            <div
+              key={idx}
+              className="absolute right-[5%] left-[35.1%] flex flex-col justify-center text-left font-sans tracking-[-0.015em]"
+              style={{ top: freeGiftTopPositions[idx] }}
+            >
+              <p className="text-[13.8px] leading-[1.2] font-normal text-white">
+                {item.line1}
+              </p>
+              <p className="text-[13.8px] leading-[1.2] font-normal text-white">
+                {item.line2}
+              </p>
+              <p className="mt-[3px] text-[11.5px] leading-[1.2] font-light italic text-white/90">
+                {item.worth}
+              </p>
+            </div>
+          ))}
+        </section>
 
-            {freeGifts.items.map((item, idx) => (
-              <div
+        {/* =====================================================================
+            SLIDE 8: ALBUM & FRAME SHOWCASE 1
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s8_album_frame_bg.webp"
+            alt="Custom Premium Leather Engraved Album and Frame"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top-right annotation */}
+          <div className="absolute top-[2.9%] left-[52.1%] text-left font-sans text-[14px] leading-[1.25] font-light tracking-[-0.015em] whitespace-pre-line text-white/95">
+            {siteConfig.albumShowcase.topLabel}
+          </div>
+
+          {/* Bottom-left annotation */}
+          <div className="absolute bottom-[2.6%] left-[3.5%] text-left font-sans text-[14px] leading-[1.25] font-light tracking-[-0.015em] text-white/95">
+            {siteConfig.albumShowcase.bottomLabel}
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 9: ALBUM SPREADS SHOWCASE 2
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s9_album_spreads_bg.webp"
+            alt="12x8 Inch 20 Pages Matte & Glossy Finishing"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Bottom-left annotation */}
+          <div className="absolute top-[85.2%] left-[3.2%] text-left font-sans text-[13.5px] leading-[1.25] font-light tracking-[-0.015em] text-white/95">
+            {siteConfig.albumShowcase.leftLabel}
+          </div>
+
+          {/* Bottom-right annotation */}
+          <div className="absolute top-[89.2%] right-[3%] left-[55.5%] text-center font-sans text-[13.5px] leading-[1.28] font-light tracking-[-0.015em] whitespace-pre-line text-white/95">
+            {siteConfig.albumShowcase.rightLabel}
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 10: DRONE SHOTS & PROMO VALUE (3499 SGD -> 1999 SGD)
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s10_drone_promo_bg.webp"
+            alt="Drone Shots and Total Value Promo"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* "drone shots" label next to arrow */}
+          <div className="absolute top-[42.4%] left-[4.5%] font-sans text-[13.5px] font-light tracking-[-0.015em] text-white/95">
+            {siteConfig.promoValue.arrowLabel}
+          </div>
+
+          {/* Promo Value Copy Overlaid on PROMO Watermark */}
+          <div className="absolute top-[52.4%] right-[6%] left-[11.2%] space-y-[20px] text-left font-sans">
+            {/* Headline with Crimson Red Highlight Box on 1999 SGD. */}
+            <p className="text-[20.5px] leading-[1.18] tracking-[-0.025em] whitespace-pre-line">
+              <span className="font-bold text-white/65">
+                {siteConfig.promoValue.headlineMuted1}
+              </span>
+              <span className="font-bold text-white">
+                {siteConfig.promoValue.headlineBold1}
+              </span>
+              <span className="font-bold text-white/65">
+                {siteConfig.promoValue.headlineMuted2}
+              </span>
+              <span className="font-bold text-white">
+                {siteConfig.promoValue.headlineBold2}
+              </span>
+              <span className="inline-block bg-[#ce0037] px-[5px] py-[1px] font-bold text-white">
+                {siteConfig.promoValue.headlineHighlight}
+              </span>
+            </p>
+
+            {/* Paragraph 1 */}
+            <p className="text-[13.8px] leading-[1.32] font-light tracking-[-0.015em] whitespace-pre-line text-white/80">
+              {siteConfig.promoValue.para1}
+            </p>
+
+            {/* Paragraph 2 */}
+            <p className="text-[13.8px] leading-[1.32] tracking-[-0.015em] whitespace-pre-line">
+              <span className="font-light text-white/80">
+                {siteConfig.promoValue.para2Muted}
+              </span>
+              <span className="font-bold text-white">
+                {siteConfig.promoValue.para2Bold}
+              </span>
+            </p>
+
+            {/* Paragraph 3 */}
+            <p className="text-[13.8px] leading-[1.32] tracking-[-0.015em] whitespace-pre-line">
+              <span className="font-light text-white/80">
+                {siteConfig.promoValue.para3Prefix}
+              </span>
+              <span className="font-bold text-white">
+                {siteConfig.promoValue.para3Bold}
+              </span>
+              <span className="font-light text-white/80">
+                {siteConfig.promoValue.para3Suffix}
+              </span>
+            </p>
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 11: 10-PHOTO MASONRY GRID
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s11_masonry_top.webp"
+            alt="Wedding Portfolio Masonry Grid"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+        </section>
+
+        {/* =====================================================================
+            SLIDE 12: 3999 SGD -> 1999 SGD OFFER + ANIMATED TICKER RIBBONS
+           ===================================================================== */}
+        <section className="relative w-full overflow-hidden">
+          <img
+            src="images/sg1999/s12_offer_bg.webp"
+            alt="Promo 1999 SGD Offer"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top Animated Diagonal Ribbon */}
+          <AnimatedPromoRibbon angle={-4.72} className="top-[25.0%]" />
+
+          {/* Left-aligned Description Text below 1999 SGD Pill */}
+          <div className="absolute top-[51.2%] right-[8%] left-[13.2%] space-y-[18px] text-left font-sans text-[14.5px] leading-[1.28] font-normal tracking-[-0.015em] text-white/95">
+            <p className="whitespace-pre-line">
+              <span>{siteConfig.priceOffer.para1Prefix}</span>
+              <span className="font-bold text-white">
+                {siteConfig.priceOffer.para1Bold}
+              </span>
+              <span>{siteConfig.priceOffer.para1Suffix}</span>
+            </p>
+            <p className="whitespace-pre-line">{siteConfig.priceOffer.para2}</p>
+            <p className="whitespace-pre-line">{siteConfig.priceOffer.para3}</p>
+          </div>
+
+          {/* Bottom Animated Diagonal Ribbon */}
+          <AnimatedPromoRibbon angle={4.91} className="bottom-[14.8%]" />
+        </section>
+
+        {/* =====================================================================
+            SLIDE 13: MAKE WEDDING FINE ART AND FUN (COLLAGE)
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s13_fine_art_fun.webp"
+            alt="Make Wedding Fine Art And Fun"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+        </section>
+
+        {/* =====================================================================
+            SLIDE 14: GOLD BAROQUE FRAME SHOWCASE
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s14_gold_frame_bg.webp"
+            alt="Mastered Through Years of Shooting in Singapore Gold Frame"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top 4-Line Editorial Quote */}
+          <div className="absolute inset-x-0 top-[4.5%] px-4 text-center">
+            <h2
+              className="text-[28px] leading-[0.98] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
+            >
+              <span className="font-semibold italic">
+                {siteConfig.emotionalQuote.line1Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.emotionalQuote.line1Regular}
+              </span>
+              <br />
+              <span className="font-semibold">
+                {siteConfig.emotionalQuote.line2Regular}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.emotionalQuote.line2Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.emotionalQuote.line2Suffix}
+              </span>
+              <br />
+              <span className="font-semibold italic">
+                {siteConfig.emotionalQuote.line3Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.emotionalQuote.line3Regular}
+              </span>
+              <br />
+              <span className="font-semibold italic">
+                {siteConfig.emotionalQuote.line4Italic}
+              </span>
+            </h2>
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 15: SILVER OVAL FRAME & 20-PHOTO GRID
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s15_silver_frame_grid.webp"
+            alt="Silver Frame and 20 Photo Portfolio Grid"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+        </section>
+
+        {/* =====================================================================
+            SLIDE 16: WHERE OUR STORIES HAVE UNFOLDED (9 SINGAPORE VENUES)
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s16_venues_bg.webp"
+            alt="Where Our Stories Have Unfolded Singapore Venues"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Heading */}
+          <div className="absolute inset-x-0 top-[4.5%] px-4 text-center">
+            <h2
+              className="text-[31px] leading-[0.96] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
+            >
+              <span className="font-semibold italic">
+                {siteConfig.venues.titleLine1Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.venues.titleLine1Regular}
+              </span>
+              <br />
+              <span className="font-semibold">
+                {siteConfig.venues.titleLine2Regular}
+              </span>
+            </h2>
+          </div>
+
+          {/* Row 1 Captions */}
+          <div className="absolute inset-x-0 top-[31.4%] grid grid-cols-3 px-[4.4%] text-left font-sans text-[11.2px] font-light tracking-[-0.015em] text-white/95">
+            {siteConfig.venues.row1.map((name, idx) => (
+              <span
                 key={idx}
-                style={{ top: freeGiftSlotTops[idx] }}
-                className="pointer-events-none absolute left-[35.1%] right-[7%] h-[17.4%] flex flex-col justify-center"
+                className={idx === 1 ? "pl-[6%]" : idx === 2 ? "pl-[11%]" : ""}
               >
-                <p className="text-[14.5px] sm:text-[15.5px] leading-[1.18] font-normal text-white whitespace-pre-line tracking-[-0.015em]">
-                  {item.title}
-                </p>
-                <p className="text-[12.5px] sm:text-[13.5px] italic font-light text-white/90 mt-1 leading-none">
-                  {item.worth}
-                </p>
-              </div>
+                {name}
+              </span>
             ))}
           </div>
 
-          {/* "Premium Album & Frame Quality" Heading flowing directly into Slide 5 */}
-          <div className="pt-8 pb-1 px-6 text-center">
+          {/* Row 2 Captions */}
+          <div className="absolute inset-x-0 top-[57.4%] grid grid-cols-3 px-[4.4%] text-left font-sans text-[11.2px] font-light tracking-[-0.015em] text-white/95">
+            {siteConfig.venues.row2.map((name, idx) => (
+              <span
+                key={idx}
+                className={idx === 1 ? "pl-[6%]" : idx === 2 ? "pl-[11%]" : ""}
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+
+          {/* Row 3 Captions */}
+          <div className="absolute inset-x-0 top-[83.8%] grid grid-cols-3 px-[4.4%] text-left font-sans text-[11.2px] font-light tracking-[-0.015em] text-white/95">
+            {siteConfig.venues.row3.map((name, idx) => (
+              <span
+                key={idx}
+                className={idx === 1 ? "pl-[6%]" : idx === 2 ? "pl-[11%]" : ""}
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 17: 5 CINEMATIC WIDESCREEN STILLS
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s17_cinematic_stills.webp"
+            alt="Cinematic Widescreen Stills"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+        </section>
+
+        {/* =====================================================================
+            SLIDE 18: WHERE MAGIC BREATHES A MASTERPIECE (5 FILM POLAROIDS)
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s18_polaroids_bg.webp"
+            alt="Where Magic Breathes a Masterpiece Polaroids"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top Quote */}
+          <div className="absolute inset-x-0 top-[3.5%] px-4 text-center">
             <h2
-              style={EDITORIAL_SERIF}
-              className="text-[32px] sm:text-[36px] leading-[0.98] font-normal text-white tracking-[-0.02em]"
+              className="text-[31px] leading-[0.96] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
             >
-              <span className="italic">{freeGifts.albumTitleLine1Italic}</span>
-              {freeGifts.albumTitleLine1Suffix}
+              <span className="font-semibold">
+                {siteConfig.polaroidsQuote.line1Regular}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.polaroidsQuote.line1Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.polaroidsQuote.line1Suffix}
+              </span>
               <br />
-              {freeGifts.albumTitleLine2Prefix}
-              <span className="italic">{freeGifts.albumTitleLine2Italic}</span>
-            </h2>
-          </div>
-        </section>
-
-        {/* ===================================================================
-            SLIDE 5: Custom Premium Leather Engraved Album + Classic Frame
-        =================================================================== */}
-        <section className="relative w-full bg-black">
-          <img
-            src="./images/my/s5_album_frame.webp"
-            alt="Custom Premium Leather Engraved Album & Classic Frame"
-            loading="lazy"
-            draggable={false}
-            className="w-full h-auto block select-none pointer-events-none"
-          />
-
-          {/* Top Right Label */}
-          <div className="pointer-events-none absolute top-[2.5%] left-[53.5%] right-[3%]">
-            <p className="text-[15px] sm:text-[16.5px] leading-[1.18] font-light text-white whitespace-pre-line tracking-[-0.015em]">
-              {albumShowcase.topLabel}
-            </p>
-          </div>
-
-          {/* Bottom Left Label */}
-          <div className="pointer-events-none absolute bottom-[2.6%] left-[3.5%]">
-            <p className="text-[15px] sm:text-[16.5px] leading-none font-light text-white tracking-[-0.015em]">
-              {albumShowcase.bottomLabel}
-            </p>
-          </div>
-        </section>
-
-        {/* ===================================================================
-            SLIDE 6: 5 Album Spreads ("12*8 inch + 20 Pages" & "matte paper + glossy")
-        =================================================================== */}
-        <section className="relative w-full bg-black">
-          <img
-            src="./images/my/s6_album_spreads.webp"
-            alt="12x8 Inch 20 Pages Matte & Glossy Paper Finishing"
-            loading="lazy"
-            draggable={false}
-            className="w-full h-auto block select-none pointer-events-none"
-          />
-
-          {/* Bottom Left Label */}
-          <div className="pointer-events-none absolute top-[85.3%] left-[3.3%]">
-            <p className="text-[15px] sm:text-[16.5px] leading-none font-light text-white tracking-[-0.015em]">
-              {albumShowcase.leftLabel}
-            </p>
-          </div>
-
-          {/* Bottom Right Label */}
-          <div className="pointer-events-none absolute top-[89.2%] left-[54%] right-[3%] text-center">
-            <p className="text-[15px] sm:text-[16.5px] leading-[1.22] font-light text-white whitespace-pre-line tracking-[-0.015em]">
-              {albumShowcase.rightLabel}
-            </p>
-          </div>
-        </section>
-
-        {/* ===================================================================
-            SLIDE 7: Drone Shots + PROMO Watermark + Total Value RM4999 -> RM3499
-        =================================================================== */}
-        <section className="relative w-full bg-black">
-          <img
-            src="./images/my/s7_drone_promo_bg.webp"
-            alt="Drone Shots & Total Value RM4999 Promo RM3499"
-            loading="lazy"
-            draggable={false}
-            className="w-full h-auto block select-none pointer-events-none"
-          />
-
-          {/* "drone shots" label under arrow */}
-          <div className="pointer-events-none absolute top-[42.6%] left-[4.5%]">
-            <p className="text-[15px] sm:text-[16.5px] leading-none font-light text-white tracking-[-0.015em]">
-              {promoValue.arrowLabel}
-            </p>
-          </div>
-
-          {/* Editable Value Copy Over Giant "PROMO" Watermark */}
-          <div className="pointer-events-none absolute top-[52.2%] left-[11.1%] right-[7%] space-y-5">
-            <h2 className="text-[22px] sm:text-[24px] leading-[1.15] tracking-[-0.025em] text-white">
-              <span className="text-[#a6a6a6] font-bold">
-                {promoValue.headlineMuted1}
-              </span>
-              <strong className="font-extrabold text-white whitespace-pre-line">
-                {promoValue.headlineBold1}
-              </strong>
-              <span className="text-[#b4b4b4] font-extrabold whitespace-pre-line">
-                {promoValue.headlineMuted2}
-              </span>
-              <strong className="font-extrabold text-white">
-                {promoValue.headlineBold2}
-              </strong>
-              <span className="inline-block bg-[#cf0540] text-white font-extrabold px-2 py-0.5">
-                {promoValue.priceBadge}
+              <span className="font-semibold">
+                {siteConfig.polaroidsQuote.line2Regular}
               </span>
             </h2>
-
-            <p className="text-[14.5px] sm:text-[15.5px] leading-[1.32] font-light text-white/95 whitespace-pre-line tracking-[-0.015em]">
-              {promoValue.para1}
-            </p>
-
-            <p className="text-[14.5px] sm:text-[15.5px] leading-[1.32] font-light text-white/95 whitespace-pre-line tracking-[-0.015em]">
-              {promoValue.para2Prefix}
-              <strong className="font-bold text-white">
-                {promoValue.para2Bold}
-              </strong>
-            </p>
-
-            <p className="text-[14.5px] sm:text-[15.5px] leading-[1.32] font-light text-white/95 whitespace-pre-line tracking-[-0.015em]">
-              {promoValue.para3Prefix}
-              <strong className="font-bold text-white">
-                {promoValue.para3Bold}
-              </strong>
-              {promoValue.para3Suffix}
-            </p>
           </div>
         </section>
 
-        {/* ===================================================================
-            SLIDE 8 + SLIDE 9: Connected 13-Photo Masonry Grid + RM 1500 OFF Offer
-        =================================================================== */}
-        <section id="offer" className="relative w-full bg-black">
-          {/* Slide 8 Masonry Grid (10 Photos) */}
-          <img
-            src="./images/my/s8_masonry_top.webp"
-            alt="Wedding Moments Masonry Gallery"
-            loading="lazy"
-            draggable={false}
-            className="w-full h-auto block select-none pointer-events-none"
-          />
-
-          {/* Slide 9 Connected Top 3 Photos + RM1500 OFF Ribbons + RM 3499 Pill */}
-          <div className="relative w-full overflow-hidden">
+        {/* =====================================================================
+            SLIDE 19: PACKAGE DETAILS + PROMO ENDS IN GRAPHIC
+           ===================================================================== */}
+        <section id="pakej" className="relative w-full bg-[#120b07]">
+          {/* Top Textured Header with "Package Details" */}
+          <div className="relative w-full">
             <img
-              src="./images/my/s9_offer_bg.webp"
-              alt="RM 1500 OFF — RM 4999 kepada RM 3499"
+              src="images/sg1999/s19_top_bg.webp"
+              alt="Package Details Header"
+              className="block h-auto w-full select-none"
               loading="lazy"
-              draggable={false}
-              className="w-full h-auto block select-none pointer-events-none"
             />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h2
+                className="text-[33px] leading-none tracking-[-0.04em] text-white"
+                style={SERIF_STYLE}
+              >
+                <span className="font-semibold italic">
+                  {siteConfig.packageDetails.sectionTitleItalic}
+                </span>
+                <span className="font-semibold">
+                  {siteConfig.packageDetails.sectionTitleRegular}
+                </span>
+              </h2>
+            </div>
+          </div>
 
-            {/* Top Animated Repeating Ticker Ribbon: Moving to the left */}
-            <RepeatedDiscountRibbon
-              angle="-4.72deg"
-              className="top-[25.2%]"
+          {/* Editable HTML Package Details Card */}
+          <PackageCard pkg={siteConfig.packageDetails} />
+
+          {/* Bottom "PROMO ENDS IN" Glowing 3D Metallic Graphic */}
+          <div className="relative w-full bg-[#090909]">
+            <img
+              src="images/sg1999/s19_promo_ends_in.webp"
+              alt="Promo Ends In"
+              className="block h-auto w-full select-none"
+              loading="lazy"
             />
+          </div>
+        </section>
 
-            {/* Bottom Animated Repeating Ticker Ribbon: Moving to the left */}
-            <RepeatedDiscountRibbon
-              angle="4.91deg"
-              className="bottom-[14.8%]"
-            />
+        {/* =====================================================================
+            SLIDE 20: LIVE COUNTDOWN + DEPOSIT SERENDAH 300 SGD + CTA BUTTON
+           ===================================================================== */}
+        <PromoCountdownSection />
 
-            {/* Editable 3 Body Paragraphs Below RM 3499 Pill */}
-            <div className="pointer-events-none absolute top-[55.5%] left-[13.5%] right-[10%] space-y-4 text-[14.5px] sm:text-[15.5px] leading-[1.28] font-light text-white/95 tracking-[-0.015em]">
+        <section className="relative w-full bg-[#090909]">
+          <img
+            src="images/sg1999/s20_deposit_bg.webp"
+            alt="Deposit Serendah 300 SGD"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Crimson Banner Text ("ini tempoh promosi akan berakhir!") with Looping Upward Arrows */}
+          <div className="absolute inset-x-0 top-[2.2%] flex h-[12.2%] items-center justify-center gap-3.5 px-4 text-center font-sans text-[21px] leading-[1.1] font-bold tracking-[-0.025em] text-white">
+            {/* Left Looping Upward Arrow */}
+            <div className="relative flex h-11 w-7 flex-col items-center justify-center overflow-hidden">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="animate-arrow-up-loop h-6 w-6 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]"
+              >
+                <path d="M12 19V5" />
+                <path d="m5 12 7-7 7 7" />
+              </svg>
+            </div>
+
+            <p>
+              <span>{siteConfig.depositSection.bannerLine1}</span>
+              <br />
+              <span>{siteConfig.depositSection.bannerLine2}</span>
+            </p>
+
+            {/* Right Looping Upward Arrow */}
+            <div className="relative flex h-11 w-7 flex-col items-center justify-center overflow-hidden">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="animate-arrow-up-loop h-6 w-6 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]"
+              >
+                <path d="M12 19V5" />
+                <path d="m5 12 7-7 7 7" />
+              </svg>
+            </div>
+          </div>
+
+          {/* 3D Dark Glass Card Content ("Deposit Serendah 300 SGD") */}
+          <div className="absolute top-[24.2%] right-[10%] left-[11.2%] flex flex-col items-start text-left">
+            <h2 className="font-sans text-[24px] leading-[1.12] font-bold tracking-[-0.025em] text-white">
+              <span>{siteConfig.depositSection.titleLine1}</span>
+              <br />
+              <span>{siteConfig.depositSection.titleLine2}</span>
+            </h2>
+
+            <div className="mt-[22px] space-y-[18px] font-sans text-[14.5px] leading-[1.32] font-light tracking-[-0.015em] text-white/95">
               <p className="whitespace-pre-line">
-                {discountOffer.para1Prefix}
-                <strong className="font-bold text-white">
-                  {discountOffer.para1Bold}
-                </strong>
-                {discountOffer.para1Suffix}
+                {siteConfig.depositSection.para1}
               </p>
-              <p className="whitespace-pre-line">{discountOffer.para2}</p>
-              <p className="whitespace-pre-line">{discountOffer.para3}</p>
-            </div>
-          </div>
-        </section>
 
-        {/* ===================================================================
-            SLIDE 10: Standard Promo RM 3499 Card (100% Editable) + "PROMO ENDS IN"
-        =================================================================== */}
-        <section id="package-details" className="bg-black pt-4 pb-2">
-          {/* Outer Dark Metallic Glassmorphic Frame */}
-          <div className="px-1.5 sm:px-2">
-            <div className="w-full rounded-[40px] p-[9px] bg-gradient-to-b from-[#3d4147] via-[#1c1e21] to-[#2c3035] border border-white/60 shadow-[0_14px_45px_rgba(0,0,0,0.9),inset_0_1px_2px_rgba(255,255,255,0.75)]">
-              {/* Inner Cream Package Card */}
-              <div className="w-full rounded-[31px] overflow-hidden bg-[#f4f2ed] text-[#231f20]">
-                {/* Yellow Top Header Banner */}
-                <div className="w-full bg-[#e8cf58] text-[#231f20] py-2.5 px-4 text-center font-medium text-[13px] sm:text-[14.5px] tracking-tight">
-                  {mainPackage.topBanner}
-                </div>
+              <p className="whitespace-pre-line">
+                {siteConfig.depositSection.para2}
+              </p>
 
-                <div className="px-6 sm:px-8 pt-6 pb-6">
-                  {/* Package Title + Offer Price */}
-                  <div className="flex items-start justify-between gap-2 mb-5">
-                    <div>
-                      <h2
-                        style={EDITORIAL_SERIF}
-                        className="text-[28px] sm:text-[32px] leading-[0.98] font-normal text-[#231f20]"
-                      >
-                        <span className="italic">{mainPackage.titleItalic}</span>
-                        <br />
-                        <span>{mainPackage.titleRegular}</span>
-                      </h2>
-                      <p
-                        style={EDITORIAL_SERIF}
-                        className="text-[13.5px] sm:text-[15px] italic text-[#231f20]/90 mt-1.5"
-                      >
-                        {mainPackage.subtitle}
-                      </p>
-                    </div>
+              <p className="pt-[4px] whitespace-pre-line">
+                {siteConfig.depositSection.para3Label}
+              </p>
 
-                    <div className="text-right shrink-0 pt-0.5">
-                      <div
-                        style={EDITORIAL_SERIF}
-                        className="text-[31px] sm:text-[36px] leading-none font-normal text-[#231f20] tracking-tight lining-nums"
-                      >
-                        {mainPackage.offerPrice}
-                      </div>
-                      <div
-                        style={EDITORIAL_SERIF}
-                        className="text-[13px] sm:text-[14.5px] text-[#ff3b3b] font-normal mt-1 lining-nums"
-                      >
-                        {mainPackage.normalPriceLabel}
-                        <span className="line-through decoration-[#ff3b3b] decoration-[1.5px]">
-                          {mainPackage.normalPriceValue}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* PHOTOGRAPHY */}
-                  <div className="mb-5">
-                    <h3
-                      style={EDITORIAL_SERIF}
-                      className="text-[13.5px] sm:text-[14.5px] tracking-[0.26em] uppercase text-[#231f20] font-normal mb-2"
-                    >
-                      PHOTOGRAPHY
-                    </h3>
-                    <ul
-                      style={EDITORIAL_SERIF}
-                      className="space-y-0.5 text-[14.5px] sm:text-[16px] leading-[1.3] italic text-[#231f20]"
-                    >
-                      {mainPackage.photographyItems.map((item, idx) => (
-                        <li key={idx}>
-                          {item.boldPrefix && (
-                            <strong className="font-bold text-black">
-                              {item.boldPrefix}
-                            </strong>
-                          )}
-                          <span>{item.text}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* VIDEOGRAPHY */}
-                  <div className="mb-5">
-                    <h3
-                      style={EDITORIAL_SERIF}
-                      className="text-[13.5px] sm:text-[14.5px] tracking-[0.26em] uppercase text-[#231f20] font-normal mb-2"
-                    >
-                      VIDEOGRAPHY
-                    </h3>
-                    <ul
-                      style={EDITORIAL_SERIF}
-                      className="space-y-0.5 text-[14.5px] sm:text-[16px] leading-[1.3] italic text-[#231f20]"
-                    >
-                      {mainPackage.videographyItems.map((item, idx) => (
-                        <li key={idx}>
-                          {item.boldPrefix && (
-                            <strong className="font-bold text-black">
-                              {item.boldPrefix}
-                            </strong>
-                          )}
-                          <span>{item.text}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* FREEGIFT */}
-                  <div className="mb-6">
-                    <h3
-                      style={EDITORIAL_SERIF}
-                      className="text-[13.5px] sm:text-[14.5px] tracking-[0.26em] uppercase text-[#231f20] font-normal mb-2"
-                    >
-                      FREEGIFT :
-                    </h3>
-                    <ul
-                      style={EDITORIAL_SERIF}
-                      className="space-y-0.5 text-[14.5px] sm:text-[16px] leading-[1.3] italic text-[#231f20]"
-                    >
-                      {mainPackage.freeGiftItems.map((item, idx) => (
-                        <li key={idx}>
-                          {item.boldPrefix && (
-                            <strong className="font-bold text-black">
-                              {item.boldPrefix}
-                            </strong>
-                          )}
-                          <span>{item.text}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Bottom Logo */}
-                  <div className="flex justify-center pt-1">
-                    <img
-                      src="./images/my/logo_exclusive_lxfilms_dark.webp"
-                      alt="exclusive by lxFILMS"
-                      loading="lazy"
-                      className="h-5 sm:h-5.5 w-auto object-contain select-none"
-                    />
-                  </div>
-                </div>
-              </div>
+              <p className="whitespace-pre-line">
+                <span className="font-bold text-white">
+                  {siteConfig.depositSection.paymentLine1Bold1}
+                </span>
+                <span>{siteConfig.depositSection.paymentLine1Regular}</span>
+                <span className="font-bold text-white">
+                  {siteConfig.depositSection.paymentLine1Bold2}
+                </span>
+                <br />
+                <span className="font-bold text-white">
+                  {siteConfig.depositSection.paymentLine2Bold1}
+                </span>
+                <span>{siteConfig.depositSection.paymentLine2Regular1}</span>
+                <span className="font-bold text-white">
+                  {siteConfig.depositSection.paymentLine2Bold2}
+                </span>
+                <span>{siteConfig.depositSection.paymentLine2Regular2}</span>
+                <span className="font-bold text-white">
+                  {siteConfig.depositSection.paymentLine2Bold3}
+                </span>
+              </p>
             </div>
           </div>
 
-          {/* Glowing 3D Silver "PROMO ENDS IN" Graphic */}
-          <div className="w-full pt-3">
-            <img
-              src="./images/my/s10_promo_ends_in.webp"
-              alt="PROMO ENDS IN"
-              loading="lazy"
-              className="w-full h-auto block select-none"
-            />
-          </div>
+          {/* Clickable 3D Glassmorphic Pill Button ("Nak Book Segera!") */}
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute inset-x-[11%] top-[84.6%] flex h-[11.2%] items-center justify-center rounded-full transition-transform active:scale-95"
+          >
+            <span className="font-sans text-[22px] font-bold tracking-[-0.025em] text-white">
+              {siteConfig.depositSection.ctaButtonText}
+            </span>
+          </a>
         </section>
 
-        {/* ===================================================================
-            SLIDE 11: Live 7-Day Countdown + INI TEMPOH PROMOSI BERAKHIR + Deposit RM 300
-        =================================================================== */}
-        <section id="booking-promo" className="bg-black pt-1">
-          {/* 7-Day Auto-Resetting Countdown Timer (Never shows 00 days) */}
-          <div className="pb-5">
-            <PromoCountdownSection
-              timeLeft={timeLeft}
-              note={depositSection.countdownNote}
-            />
-          </div>
-
-          {/* Crimson Banner ">> INI TEMPOH PROMOSI BERAKHIR <<" + Glassmorphic Deposit Card */}
-          <div className="relative w-full">
-            <img
-              src="./images/my/s11_deposit_bg.webp"
-              alt="Ini Tempoh Promosi Berakhir — Deposit Serendah RM 300"
-              loading="lazy"
-              className="w-full h-auto block select-none"
-            />
-
-            {/* Editable Deposit Text Inside Dark Glassmorphic Card */}
-            <div className="pointer-events-none absolute top-[26.8%] left-[11.1%] right-[10%]">
-              <h2 className="text-[28px] sm:text-[31px] leading-[1.08] font-extrabold tracking-[-0.025em] text-white whitespace-pre-line mb-6">
-                {depositSection.heading}
-              </h2>
-
-              <div className="space-y-4 text-[15px] sm:text-[16.5px] leading-[1.32] font-light text-white/95 tracking-[-0.015em]">
-                <p className="whitespace-pre-line">{depositSection.para1}</p>
-                <p className="whitespace-pre-line">{depositSection.para2}</p>
-                <p className="pt-1">{depositSection.balanceLabel}</p>
-
-                <div className="space-y-1">
-                  <p>
-                    <strong className="font-extrabold text-white">
-                      {depositSection.term1Bold1}
-                    </strong>
-                    {depositSection.term1Mid}
-                    <strong className="font-extrabold text-white">
-                      {depositSection.term1Bold2}
-                    </strong>
-                  </p>
-                  <p className="whitespace-pre-line">
-                    <strong className="font-extrabold text-white">
-                      {depositSection.term2Bold1}
-                    </strong>
-                    {depositSection.term2Mid1}
-                    <strong className="font-extrabold text-white">
-                      {depositSection.term2Bold2}
-                    </strong>
-                    {depositSection.term2Mid2}
-                    <strong className="font-extrabold text-white">
-                      {depositSection.term2Bold3}
-                    </strong>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Interactive Glassmorphic Button: "Nak Book Segera!" */}
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute top-[85.3%] left-[10.8%] right-[12.8%] h-[10.2%] rounded-full flex items-center justify-center text-white font-extrabold text-[23px] sm:text-[26px] tracking-[-0.025em] hover:bg-white/10 active:scale-[0.99] transition-all"
-            >
-              <span>{depositSection.buttonText}</span>
-            </a>
-          </div>
-        </section>
-
-        {/* ===================================================================
-            SLIDE 12: "Khas Untuk Promo Kali Ini Sahaja! FREE E-Kad RSVP" + iPhone
-        =================================================================== */}
-        <section className="relative w-full bg-black">
+        {/* =====================================================================
+            SLIDE 21: KHAS UNTUK PROMO KALI INI SAHAJA! FREE E-KAD RSVP 20 SGD
+           ===================================================================== */}
+        <section className="relative w-full">
           <img
-            src="./images/my/s12_rsvp_bg.webp"
-            alt="FREE E-Kad RSVP Bernilai RM 99"
+            src="images/sg1999/s21_rsvp_bg.webp"
+            alt="Free E-Kad RSVP Bernilai 20 SGD"
+            className="block h-auto w-full select-none"
             loading="lazy"
-            draggable={false}
-            className="w-full h-auto block select-none pointer-events-none"
           />
 
-          {/* Top Text */}
-          <div className="pointer-events-none absolute inset-x-0 top-[6.2%] text-center px-6">
-            <p className="text-[22px] sm:text-[24px] leading-[1.18] font-light text-white whitespace-pre-line tracking-[-0.02em]">
-              {rsvpPromo.topText}
-            </p>
+          {/* Top Heading */}
+          <div className="absolute inset-x-0 top-[5.8%] text-center font-sans text-[20px] leading-[1.2] font-light tracking-[-0.02em] text-white/95">
+            <p>{siteConfig.rsvpOffer.topLine1}</p>
+            <p>{siteConfig.rsvpOffer.topLine2}</p>
           </div>
 
-          {/* Text Inside Glassmorphic Pill */}
-          <div className="pointer-events-none absolute top-[25.9%] left-[15.5%] right-[15.5%] h-[10.3%] flex flex-col items-center justify-center text-center">
-            <p className="text-[22px] sm:text-[24px] leading-[1.12] text-white tracking-[-0.02em]">
-              <strong className="font-extrabold">{rsvpPromo.pillBold}</strong>
+          {/* 3D Pill Text ("E-Kad RSVP" bold + "Bernilai 20 SGD!" light) */}
+          <div className="absolute inset-x-[17%] top-[25.9%] flex h-[10.3%] flex-col items-center justify-center text-center font-sans text-[22px] leading-[1.15] tracking-[-0.025em] text-white">
+            <span className="font-bold">
+              {siteConfig.rsvpOffer.pillLine1Bold}
+            </span>
+            <span className="font-light text-white/95">
+              {siteConfig.rsvpOffer.pillLine2Light}
+            </span>
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 22: FEEDBACK & TESTIMONI 1
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s22_feedback_bg.webp"
+            alt="Feedback & Testimoni"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top Pill Overlay Text (Bold Sans-Serif + Light Subtitle) */}
+          <div className="absolute inset-x-[10%] top-[3.3%] flex h-[10.3%] flex-col items-center justify-center text-center font-sans">
+            <h2 className="text-[24px] leading-none font-bold tracking-[-0.025em] text-white">
+              {siteConfig.testimonials.slide22TitleBold}
+            </h2>
+            <p className="mt-1.5 text-[15px] leading-none font-light tracking-[-0.015em] text-white/95">
+              {siteConfig.testimonials.slide22Subtitle}
+            </p>
+          </div>
+        </section>
+
+        {/* =====================================================================
+            SLIDE 23: FEEDBACK & TESTIMONI 2
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s23_feedback_bg.webp"
+            alt="Feedback Testimoni WhatsApp 2"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+        </section>
+
+        {/* =====================================================================
+            SLIDE 24: NO WORRIES RAMAI LAGI WE DELIVER TAU!
+           ===================================================================== */}
+        <section className="relative w-full">
+          <img
+            src="images/sg1999/s24_feedback_bg.webp"
+            alt="No Worries Ramai Lagi We Deliver Tau"
+            className="block h-auto w-full select-none"
+            loading="lazy"
+          />
+
+          {/* Top Pill Overlay Text */}
+          <div className="absolute inset-x-[10%] top-[3.3%] flex h-[10.3%] flex-col items-center justify-center text-center">
+            <h2
+              className="text-[28px] leading-[0.98] tracking-[-0.04em] text-white"
+              style={SERIF_STYLE}
+            >
+              <span className="font-semibold">
+                {siteConfig.testimonials.slide24Line1Prefix}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.testimonials.slide24Line1Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.testimonials.slide24Line1Suffix}
+              </span>
               <br />
-              <span className="font-light">{rsvpPromo.pillRegular}</span>
-            </p>
+              <span className="font-semibold">
+                {siteConfig.testimonials.slide24Line2Prefix}
+              </span>
+              <span className="font-semibold italic">
+                {siteConfig.testimonials.slide24Line2Italic}
+              </span>
+              <span className="font-semibold">
+                {siteConfig.testimonials.slide24Line2Suffix}
+              </span>
+            </h2>
           </div>
         </section>
 
-        {/* ===================================================================
-            SLIDE 13 & 14: Feedback & Testimoni + No Worries Ramai Lagi We Deliver Tau!
-        =================================================================== */}
-        <section className="bg-black">
-          {/* Slide 13 */}
+        {/* =====================================================================
+            SLIDES 25 & 26: FREQUENT ASK QUESTION (OPEN Q&A WITH WHITE DIVIDERS)
+           ===================================================================== */}
+        <section className="relative w-full bg-[#000000] pb-16">
+          {/* Top 3D Glassmorphic Pill Header */}
           <div className="relative w-full">
             <img
-              src="./images/my/s13_feedback_bg.webp"
-              alt="Feedback & Testimoni Pelanggan 1"
-              loading="lazy"
-              draggable={false}
-              className="w-full h-auto block select-none pointer-events-none"
-            />
-            <div className="pointer-events-none absolute top-[2.3%] left-[9%] right-[9%] h-[11.8%] flex flex-col items-center justify-center text-center">
-              <h2
-                style={EDITORIAL_SERIF}
-                className="text-[29px] sm:text-[32px] leading-none font-normal text-white tracking-[-0.015em]"
-              >
-                {testimonials.title1}
-              </h2>
-              <p className="text-[14px] sm:text-[15.5px] font-light text-white/95 mt-1 tracking-tight">
-                {testimonials.subtitle1}
-              </p>
-            </div>
-          </div>
-
-          {/* Slide 14 */}
-          <div className="relative w-full">
-            <img
-              src="./images/my/s14_feedback_bg.webp"
-              alt="Feedback & Testimoni Pelanggan 2"
-              loading="lazy"
-              draggable={false}
-              className="w-full h-auto block select-none pointer-events-none"
-            />
-            <div className="pointer-events-none absolute top-[5.0%] left-[9%] right-[9%] h-[12.2%] flex flex-col items-center justify-center text-center">
-              <h2
-                style={EDITORIAL_SERIF}
-                className="text-[29px] sm:text-[32px] leading-[0.98] font-normal text-white tracking-[-0.015em]"
-              >
-                {testimonials.title2Line1Prefix}
-                <span className="italic">{testimonials.title2Line1Italic}</span>
-                {testimonials.title2Line1Suffix}
-                <br />
-                {testimonials.title2Line2Prefix}
-                <span className="italic">{testimonials.title2Line2Italic}</span>
-                {testimonials.title2Line2Suffix}
-              </h2>
-            </div>
-          </div>
-        </section>
-
-        {/* ===================================================================
-            SLIDE 15, 16, 17: "Frequent Ask Question" (All 7 FAQs Seamlessly Connected)
-        =================================================================== */}
-        <section id="faq" className="bg-black pt-4 pb-8">
-          {/* Top Glassmorphic Pill Header */}
-          <div className="relative w-full mb-5">
-            <img
-              src="./images/my/s15_pill_header.webp"
+              src="images/sg1999/s25_pill_header.webp"
               alt="Frequent Ask Question"
+              className="block h-auto w-full select-none"
               loading="lazy"
-              className="w-full h-auto block select-none"
             />
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-              <h2
-                style={DISPLAY_SERIF}
-                className="text-[29px] sm:text-[33px] leading-[0.96] font-normal text-white tracking-[-0.015em]"
-              >
-                {faqSection.headerLine1}
+            <div className="absolute inset-x-[15%] top-[16%] flex h-[74%] flex-col items-center justify-center text-center">
+              <h2 className="font-sans text-[23px] leading-[1.12] font-bold tracking-[-0.025em] text-white">
+                <span>{siteConfig.faq.headerLine1}</span>
                 <br />
-                {faqSection.headerLine2Prefix}
-                <span className="italic">{faqSection.headerLine2Italic}</span>
+                <span>{siteConfig.faq.headerLine2}</span>
               </h2>
             </div>
           </div>
 
-          {/* All 7 Editable FAQs */}
-          <div className="px-8 sm:px-10 divide-y divide-white/80">
-            {faqSection.items.map((faq, idx) => (
-              <div key={idx} className="py-6 first:pt-2">
-                <h3 className="text-[16px] sm:text-[17.5px] font-bold leading-[1.28] text-white whitespace-pre-line mb-3.5 tracking-[-0.02em]">
-                  {faq.question}
+          {/* Open FAQ Items with Horizontal White Lines */}
+          <div className="mx-auto max-w-[360px] divide-y divide-white/80 px-4">
+            {siteConfig.faq.items.map((item, idx) => (
+              <div key={idx} className="py-6 text-left">
+                <h3 className="font-sans text-[16.5px] leading-[1.25] font-bold tracking-[-0.015em] whitespace-pre-line text-white">
+                  {item.question}
                 </h3>
-                <p className="text-[15px] sm:text-[16px] font-light leading-[1.38] text-white/95 whitespace-pre-line tracking-[-0.015em]">
-                  {faq.answer}
+                <p className="mt-3.5 font-sans text-[14.5px] leading-[1.35] font-light tracking-[-0.015em] whitespace-pre-line text-white/95">
+                  {item.answer}
                 </p>
-                {faq.bullets && (
-                  <ul className="mt-3.5 pl-5 list-disc space-y-1.5 text-[15px] sm:text-[16px] font-light leading-[1.36] text-white/95 tracking-[-0.015em]">
-                    {faq.bullets.map((b, bIdx) => (
-                      <li key={bIdx}>{b}</li>
+                {item.bullets && (
+                  <ul className="mt-4 list-disc space-y-2 pl-5 font-sans text-[14.5px] leading-[1.35] font-light tracking-[-0.015em] text-white/95">
+                    {item.bullets.map((b, bIdx) => (
+                      <li key={bIdx} className="whitespace-pre-line">
+                        {b}
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -1230,60 +1528,9 @@ export default function App() {
             ))}
           </div>
         </section>
-
-        {/* ===================================================================
-            SLIDE 18, 19, 20: "Promosi Pakej Solo!" + 3 Editable Cards + Final CTA
-        =================================================================== */}
-        <section id="solo-packages" className="bg-black pt-2 pb-8">
-          {/* Top Glassmorphic Pill Header: "Promosi Pakej Solo!" */}
-          <div className="relative w-full mb-5">
-            <img
-              src="./images/my/s15_pill_header.webp"
-              alt="Promosi Pakej Solo!"
-              loading="lazy"
-              className="w-full h-auto block select-none"
-            />
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-              <h2 className="text-[27px] sm:text-[30px] leading-[1.08] font-light text-white tracking-[-0.025em]">
-                {soloPackagesSection.pillTitleLine1}
-                <br />
-                {soloPackagesSection.pillTitleLine2}
-              </h2>
-            </div>
-          </div>
-
-          {/* 3 Editable Solo & One-Event Package Cards */}
-          <div className="space-y-4">
-            {soloPackagesSection.packages.map((pkg) => (
-              <SoloOrOneEventPackageCard key={pkg.id} pkg={pkg} />
-            ))}
-          </div>
-
-          {/* Bottom Glossy Pink/Crimson Button: "Tiada Soalan Nak Book Terus!" */}
-          <div className="relative w-full mt-2">
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative block w-full group active:scale-[0.99] transition-transform"
-            >
-              <img
-                src="./images/my/s20_pink_cta_btn.webp"
-                alt="Tiada Soalan Nak Book Terus!"
-                loading="lazy"
-                className="w-full h-auto block select-none group-hover:brightness-110 transition-all"
-              />
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-[19px] sm:text-[21px] leading-[1.12] font-extrabold text-white tracking-[-0.02em]">
-                  {soloPackagesSection.finalCtaLine1}
-                  <br />
-                  {soloPackagesSection.finalCtaLine2}
-                </span>
-              </div>
-            </a>
-          </div>
-        </section>
       </main>
     </div>
   );
 }
+
+export default App;
