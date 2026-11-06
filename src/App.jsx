@@ -577,7 +577,7 @@ export function App() {
           </div>
 
           {/* "1999 SGD" centered inside the 3D Glassmorphic Pill */}
-          <div className="absolute inset-x-0 top-[64.7%] flex h-[8.4%] items-center justify-center">
+          <div className="absolute inset-x-0 top-[66.15%] flex h-[7.56%] items-center justify-center">
             <span className="font-sans text-[38px] font-black leading-none tracking-[-0.03em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
               {siteConfig.hero.priceValue}
             </span>
